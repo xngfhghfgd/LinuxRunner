@@ -1,37 +1,37 @@
-name: Bug report
-description: Report a reproducible LinuxRunner problem.
+name: bug 报告
+description: 报告一个可复现的 LinuxRunner 问题。
 title: "[Bug] "
 body:
   - type: input
     id: device
     attributes:
-      label: Device and OS
-      placeholder: Device model, iOS or iPadOS version
+      label: 设备与系统
+      placeholder: 设备型号、iOS 或 iPadOS 版本
     validations:
       required: true
   - type: input
     id: version
     attributes:
-      label: LinuxRunner version and build
-      description: Settings → About LinuxRunner. Include source revision or IPA checksum if known.
+      label: LinuxRunner 版本与 build
+      description: 设置 → 关于 LinuxRunner。如已知，请附上源码版本或 IPA 校验和。
     validations:
       required: true
   - type: input
     id: environment
     attributes:
-      label: Distribution, package and desktop
-      placeholder: Distribution/version, affected package/version, desktop and graphics mode
+      label: 发行版、包与桌面
+      placeholder: 发行版/版本、受影响的包/版本、桌面与图形模式
     validations:
       required: true
   - type: textarea
     id: steps
     attributes:
-      label: Reproduction
-      description: Steps, expected behavior, actual behavior and the first relevant error.
+      label: 复现步骤
+      description: 步骤、预期行为、实际行为与首个相关错误。
     validations:
       required: true
   - type: textarea
     id: diagnostics
     attributes:
-      label: Diagnostics or screenshots
-      description: Review exports for private information. Do not attach credentials, personal messages or signing material. Report vulnerabilities through the private security form.
+      label: 诊断或截图
+      description: 请审阅导出文件是否含私密信息。不要附上凭据、私人消息或签名材料。漏洞请通过私有安全表单报告。

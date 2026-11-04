@@ -1,35 +1,35 @@
-name: Application compatibility
-description: Share what actually works or fails in a Linux application.
+name: 应用兼容性
+description: 分享某个 Linux 应用实际可用或失败的情况。
 title: "[Compatibility] "
 body:
   - type: input
     id: application
     attributes:
-      label: Application and package version
+      label: 应用与包版本
     validations:
       required: true
   - type: input
     id: configuration
     attributes:
-      label: Device, OS, LinuxRunner version/build and distribution
+      label: 设备、系统、LinuxRunner 版本/build 与发行版
     validations:
       required: true
   - type: dropdown
     id: result
     attributes:
-      label: Test result
+      label: 测试结果
       options:
-        - Launches successfully
-        - Basic interaction tested
-        - Specific features tested (describe below)
-        - Experimental or partially working
-        - Fails to launch or crashes
+        - 成功启动
+        - 已测试基础交互
+        - 已测试特定功能（请在下方说明）
+        - 实验性或部分可用
+        - 无法启动或崩溃
     validations:
       required: true
   - type: textarea
     id: details
     attributes:
-      label: Actions tested and limitations
-      description: List actual operations, duration if relevant, graphics/input configuration and reproduction steps. A launch is not a full compatibility test. Review logs and images for personal data before sharing.
+      label: 已测试的操作与限制
+      description: 列出实际操作、相关时长、图形/输入配置与复现步骤。仅"成功启动"不等于完整的兼容性测试。分享前请审阅日志与图片中是否含个人信息。
     validations:
       required: true

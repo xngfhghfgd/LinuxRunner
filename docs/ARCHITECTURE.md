@@ -1,56 +1,56 @@
-# How LinuxRunner Works
+# LinuxRunner 的工作原理
 
-LinuxRunner hosts ARM64 Linux userspace inside an iOS/iPadOS application. It combines instruction interpretation with a Linux ABI compatibility layer. The normal **LinuxRunner** release scheme disables JIT and does not boot a Linux kernel or use hardware virtualization.
+LinuxRunner 在一个 iOS/iPadOS 应用内承载 ARM64 Linux 用户空间。它将指令解释与 Linux ABI 兼容层结合起来。正常的 **LinuxRunner** 发布 scheme 禁用 JIT，不启动 Linux 内核，也不使用硬件虚拟化。
 
 ```text
-iOS / iPadOS application
-  Setup, environments, terminal, files, diagnostics, desktop viewer
-        |                                        |
-  Pseudo-terminal                         Display / input forwarding
-        |                                        |
-  ARM64 interpreter + Linux syscall compatibility layer
-  Executable loader | processes / threads | memory | filesystem | sockets
-        |
-  Debian / Arch Linux ARM / Alpine userspace
-  Shells, package managers, X11 server, desktops and applications
+iOS / iPadOS 应用
+  设置、环境、终端、文件、诊断、桌面查看器
+         |                                        |
+  伪终端                                显示 / 输入转发
+         |                                        |
+  ARM64 解释器 + Linux 系统调用兼容层
+  可执行加载器 | 进程 / 线程 | 内存 | 文件系统 | socket
+         |
+  Debian / Arch Linux ARM / Alpine 用户空间
+  Shell、包管理器、X11 服务器、桌面与应用
 ```
 
-## 1. Load Linux Executables
+## 1. 加载 Linux 可执行文件
 
-The runtime's ELF loader maps ARM64 Linux executables and their libraries into guest address spaces, sets up process state and transfers control to the interpreter. Executable availability does not imply that every required instruction or system call is supported.
+运行时的 ELF 加载器将 ARM64 Linux 可执行文件及其动态库映射进客户端地址空间，建立进程状态并控制权移交解释器。可执行文件可用，并不意味着所需的每条指令或系统调用都受支持。
 
-## 2. Interpret ARM64 Instructions
+## 2. 解释 ARM64 指令
 
-The Asbestos interpreter decodes guest instructions into cached sequences of precompiled host routines, often called gadgets. Those routines implement guest instruction semantics. The release does not generate executable guest code at runtime. This is interpreted Linux execution, even though the device and guest both use ARM64.
+Asbestos 解释器把客户端指令解码为预编译主机例程（常称 gadget）的缓存序列，这些例程实现客户端指令语义。发布版不会在运行时生成可执行的客户端代码。虽然设备与客户端都使用 ARM64，这仍是解释执行的 Linux。
 
-Developer-only execution-engine/bootstrap targets are separate from the release configuration. Their presence in the source does not make JIT or a debugger a normal installation requirement.
+仅限开发者的执行引擎/引导目标与发布配置相互独立。它们在源码中的存在不代表 JIT 或调试器是正常安装要求。
 
-## 3. Implement Linux System Calls
+## 3. 实现 Linux 系统调用
 
-A userspace compatibility layer handles Linux calls for files, memory, processes, signals, synchronization, pseudo-terminals, sockets and related facilities. It uses platform operations and runtime bookkeeping rather than a running Linux kernel. Coverage is incomplete; unsupported semantics can prevent a program from working even after it loads.
+用户空间兼容层处理 Linux 针对文件、内存、进程、信号、同步、伪终端、socket 及相应用机制的调用。它使用平台操作与运行时簿记，而不是一个正在运行的 Linux 内核。覆盖率不完整；未支持的语义即使程序已加载也可能使其无法工作。
 
-## 4. Manage Guest Filesystems
+## 4. 管理客户端文件系统
 
-Each environment has its own root filesystem and package database. `fakefs` combines real backing files with Linux metadata held in SQLite, including ownership and modes. Import/export and optional security-scoped shared folders connect selected device files to the environment. App Group availability determines whether storage uses that shared container or the application's private fallback.
+每个环境拥有独立的根文件系统与包数据库。`fakefs` 将真实后备文件与保存在 SQLite 中的 Linux 元数据（包括属主与权限位）结合起来。导入/导出与可选的安全作用域共享文件夹把选定的设备文件连接到环境。App Group 可用性决定存储使用该共享容器还是应用的私有后备。
 
-## 5. Run Linux Processes and Threads
+## 5. 运行 Linux 进程与线程
 
-The runtime implements guest process/thread state, address spaces, scheduling interactions, signals and synchronization, including the Linux-facing behavior required by `fork`, `clone` and `execve`. These guest processes remain inside the application and its lifecycle. They do not become independently managed iOS applications or secure containers.
+运行时实现客户端进程/线程状态、地址空间、调度交互、信号与同步，包括 `fork`、`clone` 与 `execve` 所需的 Linux 行为。这些客户端进程仍位于应用内部并受其生命周期管理，不会成为独立管理的 iOS 应用或安全容器。
 
-## 6. Integrate a Graphical Desktop
+## 6. 集成图形桌面
 
-X11 applications connect to Xvfb. The desktop session starts its window manager, panel, file manager and services under the selected Linux account. x11vnc transports the display to the native RFB viewer. Managed launchers supply session-local display authorization and environment variables.
+X11 应用连接到 Xvfb。桌面会话在所选 Linux 账户下启动窗口管理器、面板、文件管理器与服务。x11vnc 把显示传输到原生 RFB 查看器。托管启动器提供会话本地的显示授权与环境变量。
 
-Arch uses Openbox, LXQt Panel and PCManFM-Qt. Debian also offers experimental KDE Plasma. A Wayland desktop/compositor session is not implemented.
+Arch 使用 Openbox、LXQt 面板与 PCManFM-Qt。Debian 还可选实验性 KDE Plasma。未实现 Wayland 桌面/合成器会话。
 
-## 7. Forward Display and Input
+## 7. 转发显示与输入
 
-The viewer presents frames with UIKit/Metal and forwards touch, keyboard and pointer events. Window-aware initial sizing and hardware keyboard shortcuts support larger iPad layouts. Viewer scaling and Linux display resolution are separate controls.
+查看器用 UIKit/Metal 呈现帧面，并转发触摸、键盘与指针事件。感知窗口的初始尺寸与硬件键盘快捷键支持更大的 iPad 布局。查看器缩放与 Linux 显示分辨率是相互独立的两项控制。
 
-Mesa supplies software OpenGL. The experimental guest Metal bridge forwards supported rendering operations to the platform GPU path; Metal presentation of a framebuffer alone is not evidence of Linux GPU API compatibility. Unsupported rendering/workloads can fail, and full API conformance is not claimed.
+Mesa 提供软件 OpenGL。实验性的客户端 Metal 桥把受支持的渲染操作转发到平台 GPU 路径；仅将帧面用 Metal 呈现不能证明 Linux GPU API 兼容。未支持的渲染/负载可能失败，且不承诺完整 API 合规。
 
-## Boundaries
+## 边界
 
-A full-system emulator would include machine/boot/kernel behavior. A virtual machine would use a virtualized machine and guest kernel. LinuxRunner instead supplies a userspace Linux ABI and interprets guest instructions within one app. It does not expose general Linux hardware access.
+全系统模拟器会包含整机/启动/内核行为。虚拟机使用虚拟化机器与客户端内核。LinuxRunner 则在一个应用内提供用户空间 Linux ABI 并解释客户端指令。它不暴露通用的 Linux 硬件访问。
 
-The iOS/iPadOS sandbox is the security boundary. Linux user accounts and permissions do not isolate hostile code from the app or other environments. See [Security](../SECURITY.md), [Compatibility](COMPATIBILITY.md) and [Known limitations](KNOWN_LIMITATIONS.md). Developers can inspect `asbestos/`, `emu/`, `kernel/`, `fs/` and `app/LinuxRunner/` for the implementation.
+iOS/iPadOS 沙箱是安全边界。Linux 用户账户与权限不能将恶意代码与应用或其他环境隔离。参见[安全](../SECURITY.md)、[兼容性](COMPATIBILITY.md)与[已知限制](KNOWN_LIMITATIONS.md)。开发者可以查看 `asbestos/`、`emu/`、`kernel/`、`fs/` 与 `app/LinuxRunner/` 了解实现。

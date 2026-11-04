@@ -1,59 +1,59 @@
-# Changelog
+# 更新日志
 
-User-visible changes follow the Added / Changed / Fixed structure. Unreleased entries remain drafts until the maintainer approves publication; use the actual publication date when releasing.
+面向用户的改动按 新增 / 变更 / 修复 的结构组织。未发布的条目在维护者批准前保持草稿状态；发布时使用实际发布日期。
 
 ## [1.0.1] — 2026-10-27
 
-### Added
+### 新增
 
-- iPad desktop adaptations: window-aware initial display sizing, hardware-keyboard desktop shortcuts and larger viewer-frame support, alongside the shared touch/pointer interface. Tested on a physical iPad.
-- Arch Linux ARM installation from signed packages, `pacman` integration and an experimental Openbox desktop with LXQt Panel and PCManFM-Qt.
-- Telegram Desktop compatibility on Arch Linux ARM, tested by the maintainer with login, sending messages and calls on build 897.
-- A unified **Set Up Linux…** workflow for new installations and configuration of existing environments.
-- Arch package-state diagnostics and signed cached-package/ownership recovery through the package-management path and Repair Center.
+- iPad 桌面适配：感知窗口的初始显示尺寸、硬件键盘桌面快捷键、更大的查看器帧支持，并与共享的触摸/指针界面配合。已在实体 iPad 上测试。
+- 通过签名包安装 Arch Linux ARM、`pacman` 集成，以及带 LXQt 面板和 PCManFM-Qt 的实验性 Openbox 桌面。
+- Arch Linux ARM 上的 Telegram Desktop 兼容性，已由维护者在 build 897 上完成登录、发消息与通话的测试。
+- 统一的**安装 Linux…**流程，适用于新安装与已有环境的配置。
+- Arch 包状态诊断，以及经由包管理路径与修复中心进行的签名缓存包/属主恢复。
 
-### Changed
+### 变更
 
-- Arch desktop defaults now use a named PCManFM-Qt profile and dedicated visible LXQt panel configuration while preserving existing user settings.
-- Desktop readiness checks require usable component windows and a submitted viewer frame; startup diagnostics retain relevant Qt platform errors.
-- IPA packaging now includes an ad-hoc signature and installer-friendly ZIP layout. Apple signing/provisioning is still required for ordinary device installation.
-- Installation, distribution, compatibility and troubleshooting documentation now covers iPhone, iPad and all three distributions.
+- Arch 桌面默认现使用命名的 PCManFM-Qt 配置文件与专用的可见 LXQt 面板配置，同时保留已有用户设置。
+- 桌面就绪检查要求组件窗口可用且查看器帧已提交；启动诊断保留相关的 Qt 平台错误。
+- IPA 打包现包含 ad-hoc 签名与安装器友好的 ZIP 布局。普通设备安装仍需 Apple 签名/描述文件。
+- 安装、发行版、兼容性与故障排查文档现覆盖 iPhone、iPad 以及全部三种发行版。
 
-### Fixed
+### 修复
 
-- Arch terminal compatibility for the termios2 operations required by its shell environment.
-- Qt desktop/application launch context so managed launches inherit the active user's X11 display and authorization.
-- Reopening a live desktop now reuses its existing session/viewer rather than rejecting re-entry.
-- Invalid or obsolete Arch package-recovery state, including validated reconciliation of orphaned GCC ownership, without bypassing signature checks.
-- Desktop panel/surface failure handling so a repeatedly crashing component does not falsely leave the desktop marked ready or end unrelated applications.
-- ARM64 vDSO executable mapping and Linux filesystem/syscall compatibility gaps covered by the retained regression evidence.
+- Arch 终端对 shell 环境所需 termios2 操作的兼容性。
+- Qt 桌面/应用启动上下文，使托管启动继承当前用户的 X11 显示与授权。
+- 重新打开活动桌面时复用其现有会话/查看器，而非拒绝再次进入。
+- 无效或过期的 Arch 包恢复状态，包括对孤儿 GCC 属主的经验证的对账，且不绕过签名检查。
+- 桌面面板/表面失败处理：反复崩溃的组件不再错误地将桌面标记为就绪，也不会结束无关应用。
+- ARM64 vDSO 可执行映射，以及由保留的回归证据覆盖的 Linux 文件系统/系统调用兼容缺口。
 
-### Known Issues
+### 已知问题
 
-- Arch desktop and Metal acceleration remain experimental. Arch Plasma and Wayland sessions are unavailable; some Arch GTK/glycin applications encounter write-seal compatibility gaps.
-- Application compatibility still depends on distribution, package version and device resources.
-- Exact tested device/OS and artifact identities should accompany compatibility reports.
-- An earlier iPhone 11/iOS 17 app-launch black-screen report remains unresolved.
-- Demanding applications can be slow or exceed platform memory limits. Background suspension/termination can stop Linux processes.
+- Arch 桌面与 Metal 加速仍为实验性。Arch 的 Plasma 与 Wayland 会话不可用；部分 Arch 的 GTK/glycin 应用存在写密封（write-seal）兼容缺口。
+- 应用兼容性仍取决于发行版、包版本与设备资源。
+- 兼容性报告应附确切的已测试设备/系统与产物标识。
+- 较早报告的 iPhone 11/iOS 17 应用启动黑屏问题仍未解决。
+- 资源占用大的应用可能较慢或超出平台内存限制。后台挂起/终止会停止 Linux 进程。
 
 ## [1.0.0] — 2026-10-25
 
-### Added
+### 新增
 
-- First public release of the iPhone application, with ARM64 Linux instruction interpretation and a Linux userspace compatibility layer.
-- Debian and Alpine environments, terminal, Linux accounts, package management and LinuxRunner Desktop.
-- Experimental Debian KDE Plasma and Metal graphics support, with application compatibility limitations.
-- Installation progress for account tools, desktop components and KDE Plasma, including measured percentages where available, actionable errors and retry.
-- Keep Screen Awake During Operations, Settings icons and third-party font/terminal notices.
+- 首个公开发布的 iPhone 应用，具备 ARM64 Linux 指令解释与 Linux 用户空间兼容层。
+- Debian 与 Alpine 环境、终端、Linux 账户、包管理与 LinuxRunner 桌面。
+- 实验性 Debian KDE Plasma 与 Metal 图形支持，存在应用兼容性限制。
+- 账户工具、桌面组件与 KDE Plasma 的安装进度，包含可用的实测百分比、可操作的错误信息与重试。
+- 操作期间保持屏幕唤醒、设置图标与第三方字体/终端声明。
 
-### Changed
+### 变更
 
-- Account-tool preparation reuses recent package lists, retries outdated lists and checks installed tools before reporting success.
-- Public versioning and LinuxRunner branding replaced the earlier internal version/name in user-facing release information.
+- 账户工具准备复用近期包列表、重试过期列表，并在报告成功前检查已安装工具。
+- 面向用户的发布信息改用公开发版号与 LinuxRunner 品牌，替代此前的内部版本/名称。
 
-### Fixed
+### 修复
 
-- An account-tools preparation failure could appear to finish without effect when its installer had not started.
+- 账户工具准备失败时，其安装器尚未启动的情况下曾看似已完成的误报。
 
 [1.0.1]: https://github.com/mxhm11cr/LinuxRunner/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/mxhm11cr/LinuxRunner/releases/tag/v1.0.0

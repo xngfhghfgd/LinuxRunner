@@ -1,36 +1,36 @@
-# LinuxRunner User Guide
+# LinuxRunner 用户指南
 
-Start with [Getting Started — Installing Linux in LinuxRunner](GETTING_STARTED.md) for the complete installation, account, terminal, desktop and application walkthrough. This page is a reference to the app's main controls; [Compatibility](COMPATIBILITY.md) records the limits of current test evidence.
+完整的安装、账户、终端、桌面与应用流程请从[快速上手 — 在 LinuxRunner 中安装 Linux](GETTING_STARTED.md)开始。本页是应用主要操作的参考；[兼容性](COMPATIBILITY.md)记录了当前测试证据的边界。
 
-## Main Tabs
+## 主要标签页
 
-| Tab | Controls |
+| 标签页 | 操作 |
 | --- | --- |
-| Home | Runtime status; Start Linux Runtime when needed; Open Desktop or Resume Desktop; Applications, App Manager, Terminal and Files. |
-| Distributions | Installed environments; Set Up Linux…; environment details with Use on Next Launch for inactive environments. Switching requires a full relaunch. |
-| Sessions | Desktop status, active account, Resume Desktop, Stop Desktop and Open Terminal. |
-| Settings | Appearance, foreground screen-awake preference, graphics/input, shared files, Linux accounts, diagnostics and About LinuxRunner. |
+| 主页 | 运行时状态；需要时启动 Linux 运行时；打开桌面或恢复桌面；应用程序、应用管理器、终端与文件。 |
+| 发行版 | 已安装环境；安装 Linux…；环境详情（非激活环境提供"下次启动时使用"）。切换需完全重启应用。 |
+| 会话 | 桌面状态、当前账户、恢复桌面、停止桌面与打开终端。 |
+| 设置 | 外观、前台常亮偏好、图形/输入、共享文件、Linux 账户、诊断与关于 LinuxRunner。 |
 
-The unified setup workflow can configure an existing environment or install another one. It does not require recreating an existing root filesystem to repair packages.
+统一的安装流程既可配置已有环境，也可安装另一个环境。修复包不需要重建已有根文件系统。
 
-## Settings Reference
+## 设置参考
 
-- **Appearance:** choose the native theme.
-- **General:** Keep Screen Awake During Operations prevents idle locking during foreground operations; it does not prevent background suspension.
-- **Desktop & Input:** Graphics, Desktop Environment, Audio, Display and Gestures, Application Launcher. Use Software (Mesa) as the reference when reporting experimental Metal problems.
-- **Files & Devices:** Shared iPhone Folders and Devices. Some labels still say iPhone on iPad. Shared folders grant Linux programs access to the selected data; review permissions before adding them.
-- **Environment:** Linux Users, Storage Management and Import File. Linux Users selects the default login, creates accounts and changes passwords. Stop/restart a desktop after changing its account.
-- **Advanced:** Terminal & Keyboard, Export Open Desktop Report and Developer Mode. Optional execution-engine experiments are separate from normal release requirements.
-- **About:** app version/build, source identity and Notices & Credits.
+- **外观：** 选择原生主题。
+- **通用：** 操作期间保持屏幕常亮可防止前台操作时的闲置锁屏；它不防止后台挂起。
+- **桌面与输入：** 图形、桌面环境、音频、显示与手势、应用启动器。报告实验性 Metal 问题时请以软件（Mesa）为参照。
+- **文件与设备：** 共享 iPhone 文件夹与设备。部分标签在 iPad 上仍写作 iPhone。共享文件夹会让 Linux 程序访问所选数据；添加前请审阅权限。
+- **环境：** Linux 用户、存储管理与导入文件。Linux 用户选择默认登录账户、创建账户与修改密码。修改账户后请停止/重启桌面。
+- **高级：** 终端与键盘、导出桌面报告与开发者模式。可选执行引擎实验与正常发布要求相互独立。
+- **关于：** 应用版本/build、源码身份与声明与致谢。
 
-## Files and Applications
+## 文件与应用
 
-**Home → Files** is the exchange-folder view, not an unrestricted browser of every rootfs path. Its current shared Linux path is `/home/mobile/Downloads`; the screen offers file import and tap-to-export. **Settings → Shared iPhone Folders** manages separately selected folders and their access checks.
+**主页 → 文件**是交换文件夹视图，并非对全部 rootfs 路径的无限制浏览器。当前共享的 Linux 路径是 `/home/mobile/Downloads`；界面提供文件导入与点按导出。**设置 → 共享 iPhone 文件夹**管理单独选择的文件夹及其访问检查。
 
-**Home → App Manager** provides the active environment's package operations and Repair Center. Applications discovered from desktop entries appear in the application launcher; discovery does not guarantee compatibility. [Package examples](GETTING_STARTED.md#12-install-and-launch-applications)
+**主页 → 应用管理器**提供当前环境的包操作与修复中心。从桌面项发现的应用会出现在应用启动器中；发现不代表兼容。[包示例](GETTING_STARTED.md#12-安装并启动应用)
 
-## Sessions and Help
+## 会话与帮助
 
-**Done** closes the viewer while retaining a live desktop. **Stop Desktop** closes that session's applications; save documents first. App termination ends Linux processes even if the viewer had been detached. [Desktop controls](GETTING_STARTED.md#11-launch-and-use-the-desktop)
+**完成**关闭查看器但保留活动桌面。**停止桌面**关闭该会话的应用；请先保存文档。应用被终止时会结束 Linux 进程，即使查看器已断开。[桌面操作](GETTING_STARTED.md#11-启动并使用桌面)
 
-For a failed install, missing panel, black desktop, crash, input issue or signing/storage change, follow [Troubleshooting](TROUBLESHOOTING.md). Review diagnostic exports for personal information before attaching them to an issue.
+安装失败、面板缺失、桌面黑屏、崩溃、输入问题或签名/存储变化，请按[故障排查](TROUBLESHOOTING.md)处理。在把诊断导出附加到 issue 前，请审阅其中是否含个人信息。

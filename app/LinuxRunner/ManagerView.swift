@@ -402,10 +402,10 @@ struct ManagerView: View {
     @AppStorage("LinuxRunnerGraphics.mode") private var graphicsMode = "mesa"
     /// Requested renderer, refined by what the latest session actually reported.
     private var graphicsStatus: String {
-        let requested = graphicsMode == "mesa-metal-resident" ? "GPU-Resident Metal" : graphicsMode == "mesa-metal-verify" ? "Metal Verification" : "Software"
+        let requested = graphicsMode == "mesa-metal-resident" ? "GPU 驻留 Metal" : graphicsMode == "mesa-metal-verify" ? "Metal 校验" : "软件"
         guard let routing = LRRuntimeBridge.graphicsSummary()["routing"] as? String else { return requested }
-        if routing.contains("reason=") { return requested + " · fell back to software" }
-        return routing.contains("active=mesa ") || routing.hasSuffix("active=mesa") ? "Software" : requested + " · active"
+        if routing.contains("reason=") { return requested + " · 回落到软件" }
+        return routing.contains("active=mesa ") || routing.hasSuffix("active=mesa") ? "软件" : requested + " · 激活"
     }
     private func statusRow(_ title: String, systemImage: String, value: String, color: Color) -> some View {
         HStack { Label(title, systemImage: systemImage); Spacer(); Text(value).font(.callout).foregroundColor(color).lineLimit(1) }
@@ -1080,8 +1080,8 @@ struct DeveloperDiagnosticsView: View {
                     Button("Apply tracing filters") { LRRuntimeBridge.configureDiagnostics(Int32(level), process: Int32(pid) ?? -1, syscall: Int32(syscall) ?? -1, errorsOnly: level < 4) }
                 }
                 Section("Live logs") {
-                    Picker("Category", selection: $category) { Text("All").tag("All"); ForEach(Array(Set(entries.compactMap { $0["category"] as? String })).sorted(), id: \.self) { Text($0).tag($0) } }
-                    Picker("Severity", selection: $severity) { Text("All").tag("All"); ForEach(DiagnosticLevel.allCases, id: \.rawValue) { Text($0.label).tag($0.label) } }
+                    Picker("Category", selection: $category) { Text("全部").tag("All"); ForEach(Array(Set(entries.compactMap { $0["category"] as? String })).sorted(), id: \.self) { Text($0).tag($0) } }
+                    Picker("Severity", selection: $severity) { Text("全部").tag("All"); ForEach(DiagnosticLevel.allCases, id: \.rawValue) { Text($0.label).tag($0.label) } }
                     TextField("Search messages", text: $search)
                     ForEach(Array(filtered.enumerated()), id: \.offset) { _, entry in
                         VStack(alignment: .leading) {

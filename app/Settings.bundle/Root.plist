@@ -8,13 +8,13 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Opens the app straight to the settings menu. Useful if you changed anything there and need to change it back but the app won&apos;t start.</string>
+			<string>启动应用时直接进入设置界面。当你改动了设置且应用无法启动时，可以在此改回来。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Recovery Mode</string>
+			<string>恢复模式</string>
 			<key>Key</key>
 			<string>recovery</string>
 			<key>DefaultValue</key>

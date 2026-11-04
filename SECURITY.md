@@ -1,23 +1,23 @@
-# Security Policy
+# 安全政策
 
-## Security Model
+## 安全模型
 
-LinuxRunner runs Linux programs inside one iOS/iPadOS application. **The platform sandbox is the security boundary.** Linux accounts, permissions and guest memory mappings do not isolate hostile programs from the app or from one another.
+LinuxRunner 在一个 iOS/iPadOS 应用内运行 Linux 程序。**平台沙箱才是安全边界。** Linux 账户、权限与客户端内存映射不能将恶意程序与应用本身或彼此隔离。
 
-Shared folders intentionally grant selected file access; Linux programs can use the device's network through the compatibility layer. The experimental graphics bridge accepts guest rendering requests. Do not treat environments as secure containers for untrusted software or sensitive secrets.
+共享文件夹有目的地授予选定的文件访问权限；Linux 程序可以通过兼容层使用设备网络。实验性图形桥接受客户端渲染请求。不要把环境当作不受信任软件或敏感机密的安全容器。
 
-Distribution installers use signature-checked package data and TLS. Keep those checks enabled. Package repair invokes real package tools and maintainer scripts; metadata checkpoints do not provide complete rollback.
+发行版安装器使用经签名校验的包数据与 TLS。请保持这些检查开启。包修复会调用真实的包工具与维护者脚本；元数据检查点不提供完整回滚。
 
-## Report a Vulnerability Privately
+## 私密报告漏洞
 
-Use [GitHub's private vulnerability report form](https://github.com/mxhm11cr/LinuxRunner/security/advisories/new). Private reporting was enabled for the public repository; if the form is unavailable, do not post exploit details, credentials or private data in an ordinary issue.
+请使用 [GitHub 的私有漏洞报告表单](https://github.com/mxhm11cr/LinuxRunner/security/advisories/new)。公共仓库已启用私有报告；若表单不可用，请勿在普通 issue 中发布利用细节、凭据或私有数据。
 
-Include app version/build, source/artifact identity when known, device/OS, distribution and a minimal reproduction. No response deadline is promised. Ordinary crashes and compatibility problems can be reported through [Issues](https://github.com/mxhm11cr/LinuxRunner/issues).
+请附上应用的版本/build、已知时的源码/产物身份、设备/系统、发行版与最小复现。不承诺响应时限。普通崩溃与兼容性问题可通过 [Issues](https://github.com/mxhm11cr/LinuxRunner/issues) 报告。
 
-## Diagnostic Privacy
+## 诊断隐私
 
-Reports apply bounded logging and redaction, but exported filenames, application output and screenshots may still contain personal information. Review files before sharing. Never publish passwords, signing material, tokens or personal messages.
+报告会使用有界日志与脱敏，但导出的文件名、应用输出与截图仍可能包含个人信息。分享前请审阅文件。切勿发布密码、签名材料、令牌或私人消息。
 
-## Upstream
+## 上游
 
-LinuxRunner derives from [iSH](https://github.com/ish-app/ish) through [ios-linuxkit](https://github.com/rcarmo/ios-linuxkit). Their upstream security policies and retained source notices continue to apply to their components.
+LinuxRunner 派生自 [iSH](https://github.com/ish-app/ish)，经由 [ios-linuxkit](https://github.com/rcarmo/ios-linuxkit)。它们的上游安全政策与保留的源码声明继续适用于其各自组件。

@@ -1,29 +1,29 @@
-# Known Limitations
+# 已知限制
 
-## Execution and Platform
+## 执行与平台
 
-LinuxRunner interprets ARM64 Linux userspace. It does not boot a Linux kernel, use hardware virtualization or require JIT in the normal release. x86/x86-64 applications, kernel modules, conventional Linux containers, systemd as init and Wayland sessions are unsupported. Linux system-call coverage is incomplete; an available package may require features the runtime does not implement.
+LinuxRunner 解释执行 ARM64 Linux 用户空间。它不启动 Linux 内核、不使用硬件虚拟化，正常发布版也不需要 JIT。x86/x86-64 应用、内核模块、常规 Linux 容器、以 systemd 作为 init 与 Wayland 会话均不受支持。Linux 系统调用覆盖不完整；某个包虽然可用，也可能需要运行时未实现的功能。
 
-The build targets iOS/iPadOS 15.0 and device families iPhone/iPad. This configuration is not a compatibility certificate for every device or OS. The maintainer confirms iPhone build 897 use and physical-iPad testing. An earlier iPhone 11/iOS 17 app-launch black-screen report is unresolved.
+构建目标为 iOS/iPadOS 15.0 与 iPhone/iPad 设备族。该配置不是对每台设备或每个系统的兼容性认证。维护者确认了 iPhone build 897 的使用与实体 iPad 测试。此前报告的 iPhone 11/iOS 17 应用启动黑屏问题仍未解决。
 
-## Desktops and Applications
+## 桌面与应用
 
-- Arch's Openbox/LXQt-component desktop is experimental. Current Arch Plasma is unavailable; installing a Wayland package does not provide a working session.
-- Debian KDE Plasma is experimental and needs more memory than LinuxRunner Desktop.
-- Some Arch GTK/glycin applications still encounter write-seal compatibility failures. Their warning or crash is not evidence that every Qt/X11 program is broken.
-- Telegram Desktop login, sending messages and calls have been tested on Arch Linux ARM. Other application/version/device combinations can vary. Browsers, Blender and other demanding programs can be slow, incomplete or crash.
-- A repeatedly crashing panel or desktop surface can be left stopped after bounded recovery while other applications continue. Save work before an explicit desktop stop.
-- Mesa software rendering is the reference path. Experimental Metal acceleration covers selected OpenGL paths, with incomplete shader/API coverage. No full OpenGL or Vulkan conformance is claimed.
-- Alpine is primarily documented as a terminal environment; its desktop path is experimental.
+- Arch 的 Openbox/LXQt 组件桌面为实验性。当前 Arch 的 Plasma 不可用；安装 Wayland 包也不会得到可用会话。
+- Debian 的 KDE Plasma 为实验性，且比 LinuxRunner 桌面需要更多内存。
+- 部分 Arch 的 GTK/glycin 应用仍会遇到写密封兼容失败。它们的警告或崩溃并不说明所有 Qt/X11 程序都有问题。
+- Telegram Desktop 的登录、发消息与通话已在 Arch Linux ARM 上测试。其他应用/版本/设备组合表现可能不同。浏览器、Blender 等重量级程序可能较慢、功能不完整或崩溃。
+- 反复崩溃的面板或桌面表面在限定次数的恢复失败后可能保持停止状态，而其他应用继续运行。在显式停止桌面前请保存工作。
+- Mesa 软件渲染是参照路径。实验性 Metal 加速覆盖部分 OpenGL 路径，着色器/API 覆盖不完整。不承诺完整的 OpenGL 或 Vulkan 合规。
+- Alpine 主要作为终端环境记录；其桌面路径为实验性。
 
-## Lifecycle, Storage and Safety
+## 生命周期、存储与安全
 
-One Linux runtime is active per app launch. Switching distributions requires a full app relaunch. **Done** retains a live desktop inside the app, but iOS/iPadOS can suspend or terminate LinuxRunner. Keep Screen Awake only prevents foreground idle locking. Saved files persist; running Linux processes do not survive app termination.
+每次启动应用只有一个 Linux 运行时处于激活状态。切换发行版需要完全重启应用。**完成**会在应用内保留活动桌面，但 iOS/iPadOS 可能挂起或终止 LinuxRunner。保持屏幕常亮只防止前台闲置锁屏。已保存文件会保留；正在运行的 Linux 进程无法在应用终止后存活。
 
-Device memory and storage constrain workloads. No universal RAM, performance or installation-time guarantee is provided. Hardware access remains limited by the platform; an accessory input path is not general USB/Bluetooth device passthrough.
+设备内存与存储限制实际负载。不承诺普适的内存、性能或安装耗时保证。硬件访问仍受平台限制；配件输入路径不是通用的 USB/蓝牙设备直通。
 
-App Group and private storage availability follow the app's signature. Changing bundle identity or entitlement/container configuration can hide access to previous environments. Back up files and do not uninstall the app as a repair step.
+App Group 与私有存储的可用性跟随应用的签名。更改 bundle 身份或授权/容器配置可能导致无法访问此前环境。请备份文件，不要把卸载应用作为修复手段。
 
-Linux users and permissions do not isolate hostile programs from the app. Package repair uses real maintainer scripts; a package-metadata checkpoint is not a complete backup or guaranteed rollback. Never bypass package signatures to work around compatibility problems.
+Linux 用户与权限不能将恶意程序与应用隔离。包修复使用真实的维护者脚本；包元数据检查点不是完整备份，也不保证可回滚。切勿为绕过兼容问题而绕过包签名。
 
-See [Compatibility](COMPATIBILITY.md), [Troubleshooting](TROUBLESHOOTING.md) and [Security](../SECURITY.md). Detailed syscall references remain in [SYSCALL_MATRIX.md](SYSCALL_MATRIX.md); their historical entries are not a device-wide test certificate.
+参见[兼容性](COMPATIBILITY.md)、[故障排查](TROUBLESHOOTING.md)与[安全](../SECURITY.md)。详细系统调用参考保留在 [SYSCALL_MATRIX.md](SYSCALL_MATRIX.md)；其历史条目不是面向全设备的测试认证。

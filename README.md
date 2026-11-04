@@ -1,135 +1,135 @@
 <p align="center">
-  <img src="assets/branding/linuxrunner-icon.svg" alt="LinuxRunner app icon" width="160">
+  <img src="assets/branding/linuxrunner-icon.svg" alt="LinuxRunner 应用图标" width="160">
 </p>
 
 <h1 align="center">LinuxRunner</h1>
-<h3 align="center">Linux on your iPhone and iPad.</h3>
+<h3 align="center">在 iPhone 和 iPad 上运行 Linux。</h3>
 
-<p align="center">ARM64 Linux userspace, terminals and desktop applications on iOS and iPadOS.</p>
+<p align="center">在 iOS 和 iPadOS 上运行 ARM64 Linux 用户空间、终端与桌面应用程序。</p>
 
 <p align="center">
-  <img src="assets/branding/platform-badge.svg" alt="Platform: iOS and iPadOS">
-  <img src="assets/branding/architecture-badge.svg" alt="Guest architecture: ARM64">
-  <a href="LICENSE.md"><img src="assets/branding/license-badge.svg" alt="License: GPL-3.0"></a>
+  <img src="assets/branding/platform-badge.svg" alt="平台：iOS 和 iPadOS">
+  <img src="assets/branding/architecture-badge.svg" alt="客户机架构：ARM64">
+  <a href="LICENSE.md"><img src="assets/branding/license-badge.svg" alt="许可证：GPL-3.0"></a>
 </p>
 
-LinuxRunner uses a custom ARM64 interpreter and Linux compatibility layer to load Linux programs, implement their system calls and connect them to storage, networking and a graphical desktop on supported devices.
+LinuxRunner 使用自定义的 ARM64 解释器和 Linux 兼容层来加载 Linux 程序、实现其系统调用，并在受支持的设备上将其连接到存储、网络和图形桌面。
 
-**No jailbreak. No virtual machine. No JIT required by the release build.**
+**无需越狱。无需虚拟机。发布版构建不需要 JIT。**
 
-[Download the latest release](https://github.com/mxhm11cr/LinuxRunner/releases/latest) · [Set up Linux](docs/GETTING_STARTED.md) · [Troubleshooting](docs/TROUBLESHOOTING.md)
+[下载最新 release](https://github.com/mxhm11cr/LinuxRunner/releases/latest) · [安装 Linux](docs/GETTING_STARTED.md) · [故障排查](docs/TROUBLESHOOTING.md)
 
-[![KDE Plasma with Dolphin in LinuxRunner](assets/screenshots/linuxrunner-dolphin.png)](assets/screenshots/linuxrunner-dolphin.png)
+[![LinuxRunner 中的 KDE Plasma 与 Dolphin](assets/screenshots/linuxrunner-dolphin.png)](assets/screenshots/linuxrunner-dolphin.png)
 
-**KDE Plasma** — an experimental Debian desktop option.
+**KDE Plasma** — 一个实验性的 Debian 桌面选项。
 
 <table>
 <tr>
-<td align="center"><a href="assets/screenshots/linuxrunner-home.png"><img src="assets/screenshots/linuxrunner-home.png" alt="LinuxRunner Home" width="220"></a><br><b>LinuxRunner</b></td>
-<td align="center"><a href="assets/screenshots/linuxrunner-settings.png"><img src="assets/screenshots/linuxrunner-settings.png" alt="LinuxRunner Settings" width="220"></a><br><b>Settings</b></td>
+<td align="center"><a href="assets/screenshots/linuxrunner-home.png"><img src="assets/screenshots/linuxrunner-home.png" alt="LinuxRunner 主页" width="220"></a><br><b>LinuxRunner</b></td>
+<td align="center"><a href="assets/screenshots/linuxrunner-settings.png"><img src="assets/screenshots/linuxrunner-settings.png" alt="LinuxRunner 设置" width="220"></a><br><b>设置</b></td>
 </tr>
 <tr>
-<td align="center"><a href="assets/screenshots/linuxrunner-firefox.png"><img src="assets/screenshots/linuxrunner-firefox.png" alt="Firefox showing example.com" width="420"></a><br><b>Firefox</b></td>
-<td align="center"><a href="assets/screenshots/linuxrunner-blender-viewport.jpg"><img src="assets/screenshots/linuxrunner-blender-viewport.jpg" alt="Blender viewport" width="420"></a><br><b>Blender</b></td>
+<td align="center"><a href="assets/screenshots/linuxrunner-firefox.png"><img src="assets/screenshots/linuxrunner-firefox.png" alt="显示 example.com 的 Firefox" width="420"></a><br><b>Firefox</b></td>
+<td align="center"><a href="assets/screenshots/linuxrunner-blender-viewport.jpg"><img src="assets/screenshots/linuxrunner-blender-viewport.jpg" alt="Blender 视口" width="420"></a><br><b>Blender</b></td>
 </tr>
 </table>
 
-LinuxRunner on iPhone: KDE Plasma, Firefox, Blender and Arch Linux ARM. The Arch capture below shows Telegram Desktop. Setup and iPad screenshots will be added when supplied.
+LinuxRunner 在 iPhone 上的表现：KDE Plasma、Firefox、Blender 和 Arch Linux ARM。下面 Arch 的截图展示的是 Telegram Desktop。设置流程和 iPad 的截图将在提供后补充。
 
-### Telegram Desktop on Arch Linux ARM
+### Arch Linux ARM 上的 Telegram Desktop
 
 <p align="center">
-  <a href="assets/screenshots/arch-telegram-iphone.jpg"><img src="assets/screenshots/arch-telegram-iphone.jpg" alt="Telegram Desktop welcome screen on Arch Linux ARM in LinuxRunner on iPhone" width="360"></a>
+  <a href="assets/screenshots/arch-telegram-iphone.jpg"><img src="assets/screenshots/arch-telegram-iphone.jpg" alt="iPhone 上 LinuxRunner 中 Arch Linux ARM 的 Telegram Desktop 欢迎界面" width="360"></a>
 </p>
 
-**Telegram Desktop** — tested on Arch Linux ARM: login, sending messages and calls. The supplied iPhone capture shows its welcome screen.
+**Telegram Desktop** — 已在 Arch Linux ARM 上测试：登录、发消息和通话。所附 iPhone 截图展示的是其欢迎界面。
 
-## Highlights
+## 亮点
 
-- **Three Linux distributions:** Debian GNU/Linux ARM64, Arch Linux ARM and Alpine Linux ARM64, each with its own packages and files.
-- **A Linux terminal:** shells, standard user accounts, package managers and available ARM64 command-line tools.
-- **Linux desktops and applications:** an X11 desktop with windows, a panel and file management; experimental KDE Plasma on Debian.
-- **Touch, keyboard and pointer input:** on-screen controls, hardware keyboard forwarding and supported mouse/trackpad events.
-- **Files and networking:** import/export, optional shared folders and Linux sockets over the device's network, subject to iOS restrictions.
-- **New in 1.0.1:** iPad desktop adaptations, unified distribution setup, Arch package recovery and desktop/session improvements. [Changelog](CHANGELOG.md)
+- **三种 Linux 发行版：** Debian GNU/Linux ARM64、Arch Linux ARM 和 Alpine Linux ARM64，各自拥有独立的包与文件。
+- **一个 Linux 终端：**  shells、标准用户账户、包管理器以及可用的 ARM64 命令行工具。
+- **Linux 桌面与应用：** 带窗口、面板和文件管理的 X11 桌面；Debian 上为实验性 KDE Plasma。
+- **触摸、键盘与指针输入：** 屏幕操作控件、硬件键盘转发以及支持的鼠标/触控板事件。
+- **文件与网络：** 导入/导出、可选的共享文件夹，以及通过设备网络进行的 Linux socket 通信（受 iOS 限制约束）。
+- **1.0.1 新增：** iPad 桌面适配、统一的发行版安装流程、Arch 包恢复以及桌面/会话改进。[更新日志](CHANGELOG.md)
 
-## Supported Devices
+## 支持的设备
 
-| Device | Configuration | Qualification |
+| 设备 | 配置 | 验证情况 |
 | --- | --- | --- |
-| iPhone | ARM64; iOS 15.0 deployment target; portrait and both landscape orientations | The maintainer reports build 897 running Arch, its graphical desktop and graphical applications on a physical iPhone. |
-| iPad | ARM64; iPadOS 15.0 deployment target; all four orientations | iPad support is included in v1.0.1 and has been tested on a physical iPad. |
+| iPhone | ARM64；iOS 15.0 部署目标；竖屏及两种横屏方向 | 维护者报告 build 897 在一台实体 iPhone 上运行了 Arch、其图形桌面与图形应用。 |
+| iPad | ARM64；iPadOS 15.0 部署目标；四种方向 | iPad 支持自 v1.0.1 起提供，并已在实体 iPad 上测试。 |
 
-Deployment targets describe the build configuration, not a guarantee for every device or OS version. Available memory and storage affect practical workloads. An older report of an iPhone 11/iOS 17 launch black screen remains unresolved.
+部署目标描述的是构建配置，并非对每台设备或每个系统版本的保证。可用的内存与存储会影响实际使用。此前报告的 iPhone 11/iOS 17 启动黑屏问题仍未解决。
 
-### LinuxRunner on iPad
+### LinuxRunner 在 iPad 上
 
-The larger display gives Linux windows more room. The viewer sizes a new **Fit Screen** session to the current window and provides **Fit to Screen**, **Actual Size**, touch gestures, hardware keyboard forwarding and pointer handling. Desktop actions also have Control–Option–Command shortcuts. Rotation and window size are handled by the interface; changing the Linux display resolution takes effect at the next desktop start. iPad support has been physically tested by the maintainer. [Controls and shortcuts](docs/GETTING_STARTED.md#11-launch-and-use-the-desktop)
+更大的屏幕为 Linux 窗口提供了更多空间。查看器会把新的**适配屏幕**会话调整为当前窗口大小，并提供**适配屏幕**、**实际大小**、触摸手势、硬件键盘转发和指针操作。桌面操作还支持 Control–Option–Command 快捷键。屏幕旋转和窗口大小由界面处理；修改 Linux 显示分辨率会在下次启动桌面时生效。iPad 支持已由维护者在实体设备上测试通过。[操作与快捷键](docs/GETTING_STARTED.md#11-launch-and-use-the-desktop)
 
-## Supported Linux Distributions
+## 支持的 Linux 发行版
 
-| Distribution | Terminal | Package manager | Desktop | Status |
+| 发行版 | 终端 | 包管理器 | 桌面 | 状态 |
 | --- | --- | --- | --- | --- |
-| Debian GNU/Linux 13 ARM64 | Supported | `apt` / `dpkg` | LinuxRunner Desktop; KDE Plasma experimental | Recommended starting point |
-| Arch Linux ARM | Supported | `pacman` | Openbox with LXQt Panel and PCManFM-Qt | Experimental; maintainer reports desktop success on iPhone build 897 |
-| Alpine Linux 3.24 ARM64 | Supported | `apk` | Desktop path exists; compatibility remains experimental | Best suited to a smaller terminal environment |
+| Debian GNU/Linux 13 ARM64 | 支持 | `apt` / `dpkg` | LinuxRunner 桌面；KDE Plasma 为实验性 | 推荐的起点 |
+| Arch Linux ARM | 支持 | `pacman` | Openbox 配 LXQt 面板和 PCManFM-Qt | 实验性；维护者报告在 iPhone build 897 上桌面运行成功 |
+| Alpine Linux 3.24 ARM64 | 支持 | `apk` | 桌面路径存在；兼容性仍为实验性 | 最适合较小的终端环境 |
 
-Arch uses selected LXQt components, not a claim of a complete LXQt session. Current Arch Plasma and Wayland sessions are unavailable. Multiple environments can coexist; one runtime is active per app launch.
+Arch 使用的是部分 LXQt 组件，并非完整 LXQt 会话的承诺。当前 Arch 的 Plasma 和 Wayland 会话不可用。多个环境可以共存；每次启动应用只有一个运行时处于激活状态。
 
-## Installation
+## 安装
 
-1. Download the LinuxRunner IPA from [GitHub Releases](https://github.com/mxhm11cr/LinuxRunner/releases/latest).
-2. Install it with your preferred compatible IPA sideloading tool, such as [Sideloadly](https://sideloadly.io/) or [AltStore Classic](https://altstore.io/).
-3. Open LinuxRunner on your iPhone or iPad.
-4. Follow **Set Up Linux…** to install a distribution inside the app.
+1. 从 [GitHub Releases](https://github.com/mxhm11cr/LinuxRunner/releases/latest) 下载 LinuxRunner 的 IPA。
+2. 使用你偏好的兼容 IPA 侧载工具安装，例如 [Sideloadly](https://sideloadly.io/) 或 [AltStore Classic](https://altstore.io/)。
+3. 在 iPhone 或 iPad 上打开 LinuxRunner。
+4. 按照**安装 Linux…**流程在应用内安装一个发行版。
 
-Signing and compatibility depend on the selected method. The v1.0.1 packaging script produces an ad-hoc-signed IPA without an Apple provisioning profile; a compatible tool must provide the signing/provisioning needed for installation. Keep the same app identity and storage configuration when updating. [Download verification and signing](docs/INSTALLATION.md)
+签名与兼容性取决于所选方式。v1.0.1 的打包脚本生成的是经 ad-hoc 签名、不带 Apple 描述文件的 IPA；安装所需的签名/描述文件需由兼容工具提供。更新时请保持相同的应用身份与存储配置。[下载验证与签名](docs/INSTALLATION.md)
 
-## Getting Started — Installing Linux in LinuxRunner
+## 快速上手 — 在 LinuxRunner 中安装 Linux
 
-Installing the IPA installs the application. **You then install or configure a Linux distribution inside it.**
+安装 IPA 只是安装应用本体。**你还需要在其中安装或配置一个 Linux 发行版。**
 
-Open **Distributions → Set Up Linux… → Continue**. Choose Debian, Arch or Alpine, then continue to that distribution's install button. Follow the requested app relaunch, create or select a Linux account and install desktop components if wanted. Use **Home → Terminal** for a shell, or **Open Desktop** / **Resume Desktop** for a graphical session.
+打开**发行版 → 安装 Linux… → 继续**。选择 Debian、Arch 或 Alpine，然后继续到该发行版的安装按钮。按照提示重启应用，创建或选择一个 Linux 账户，需要时安装桌面组件。用**主页 → 终端**进入 shell，或用**打开桌面** / **恢复桌面**进入图形会话。
 
-The [step-by-step guide](docs/GETTING_STARTED.md) covers existing environments, account options, progress, terminal commands, package installation and desktop controls. It uses the labels in the current app.
+[分步指南](docs/GETTING_STARTED.md)涵盖已有环境、账户选项、安装进度、终端命令、包安装与桌面操作，使用当前应用中的实际标签文案。
 
-## Desktop Environments and Applications
+## 桌面环境与应用程序
 
-LinuxRunner Desktop is the default lightweight X11 session. On Debian, KDE Plasma can be installed later through **Settings → Desktop Environment**. On Arch, use the Openbox/LXQt-component desktop offered by setup.
+LinuxRunner 桌面是默认的轻量 X11 会话。在 Debian 上可以之后通过**设置 → 桌面环境**安装 KDE Plasma。在 Arch 上，请使用安装流程提供的 Openbox/LXQt 组件桌面。
 
-Install software through **Home → App Manager** or the distribution's package manager. Start discovered graphical applications through **Home → Applications**. Use a regular Linux user for everyday work; `sudo` is available to accounts created with administrator privileges.
+通过**主页 → 应用管理器**或发行版自身的包管理器安装软件。通过**主页 → 应用程序**启动已发现的图形应用。日常工作请使用普通 Linux 用户；带管理员权限创建的账户可以使用 `sudo`。
 
-**Telegram Desktop has been tested on Arch Linux ARM with build 897, including login, sending messages and calls.** Earlier supplied captures also show Dolphin, Firefox and Blender. [Application compatibility](docs/COMPATIBILITY.md)
+**Telegram Desktop 已在 build 897 的 Arch Linux ARM 上完成测试，包括登录、发消息与通话。** 此前提供的截图还展示了 Dolphin、Firefox 和 Blender。[应用兼容性](docs/COMPATIBILITY.md)
 
-## How LinuxRunner Works
+## LinuxRunner 的工作原理
 
-The executable loader maps ARM64 Linux ELF programs and their libraries. The interpreter executes supported guest instructions through precompiled host routines. A userspace compatibility layer implements Linux system calls, processes, threads, signals, memory mappings and filesystem metadata. Linux sockets connect through the platform network APIs.
+可执行加载器映射 ARM64 Linux ELF 程序及其动态库。解释器通过预编译的主机例程执行受支持的客户端指令。用户空间兼容层实现 Linux 系统调用、进程、线程、信号、内存映射与文件系统元数据。Linux socket 经由平台网络 API 连接。
 
-Graphical applications use X11: Xvfb and x11vnc feed the native desktop viewer, which forwards display updates and input. Mesa supplies software OpenGL; an experimental Metal bridge accelerates selected rendering paths. This is userspace compatibility with instruction interpretation, rather than full-system emulation or hardware virtualization. LinuxRunner does not boot a Linux kernel or execute arbitrary guest code natively. [Architecture](docs/ARCHITECTURE.md)
+图形应用使用 X11：Xvfb 与 x11vnc 为原生桌面查看器提供画面，查看器转发显示更新与输入事件。Mesa 提供软件 OpenGL；实验性的 Metal 桥接可加速部分渲染路径。这是带指令解释的用户空间兼容，而非全系统模拟或硬件虚拟化。LinuxRunner 不启动 Linux 内核，也不原生执行任意客户代码。[架构说明](docs/ARCHITECTURE.md)
 
-## Compatibility and Limitations
+## 兼容性与限制
 
-- ARM64 Linux programs only; x86/x86-64 applications and Linux kernel boot are unsupported.
-- System-call and graphics coverage is incomplete. Package availability does not establish application compatibility.
-- Arch desktop, Debian KDE Plasma and Metal acceleration are experimental; demanding programs may be slow or exceed device memory limits.
-- No Wayland session, systemd as init, kernel modules or conventional Linux containers.
-- iOS/iPadOS can suspend or terminate the app. **Done** retains a running desktop within the app; termination does not preserve running Linux processes.
-- Linux accounts and permissions do not isolate hostile software from the application. The platform sandbox is the security boundary.
+- 仅支持 ARM64 Linux 程序；x86/x86-64 应用与 Linux 内核启动均不受支持。
+- 系统调用与图形覆盖率不完整。包可用不代表应用兼容。
+- Arch 桌面、Debian 的 KDE Plasma 与 Metal 加速均为实验性；资源占用大的程序可能较慢或超出设备内存限制。
+- 不支持 Wayland 会话、以 systemd 作为 init、内核模块或常规 Linux 容器。
+- iOS/iPadOS 可能挂起或终止应用。**完成**只在应用内部保留正在运行的桌面；应用被终止时不会保留正在运行的 Linux 进程。
+- Linux 账户与权限不能将恶意软件与应用程序隔离开。平台沙箱才是安全边界。
 
-See [compatibility](docs/COMPATIBILITY.md), [known limitations](docs/KNOWN_LIMITATIONS.md) and the [security policy](SECURITY.md).
+参见[兼容性](docs/COMPATIBILITY.md)、[已知限制](docs/KNOWN_LIMITATIONS.md)与[安全政策](SECURITY.md)。
 
-## Troubleshooting and Bug Reports
+## 故障排查与问题报告
 
-Start with [Troubleshooting](docs/TROUBLESHOOTING.md). The App Manager's **Repair Center** provides diagnosis and package repair; **Settings → Advanced → Export Open Desktop Report** collects startup/session information. Review reports for personal data before sharing.
+请先阅读[故障排查](docs/TROUBLESHOOTING.md)。应用管理器的**修复中心**提供诊断与包修复；**设置 → 高级 → 导出桌面报告**可收集启动/会话信息。分享前请先检查报告中是否含个人信息。
 
-[Report a reproducible issue](https://github.com/mxhm11cr/LinuxRunner/issues/new/choose) with your device, OS, app version/build, distribution and steps. A launch report is useful even when an application is not fully compatible.
+附上设备、系统、应用版本/build、发行版与复现步骤，[报告一个可复现的问题](https://github.com/mxhm11cr/LinuxRunner/issues/new/choose)。即使应用不完全兼容，启动报告也很有价值。
 
-## Building and Contributing
+## 构建与贡献
 
-Most users install the IPA. Developers can build the **LinuxRunner** scheme in `iSH.xcodeproj`; see the [build guide](docs/BUILDING.md) for tool requirements, pinned dependencies and verification. [Contributing](CONTRIBUTING.md) covers focused changes and useful compatibility reports.
+多数用户直接安装 IPA。开发者可以在 `iSH.xcodeproj` 中构建 **LinuxRunner** scheme；工具要求、固定版本依赖与验证方法见[构建指南](docs/BUILDING.md)。[贡献指南](CONTRIBUTING.md)说明了聚焦型改动与有价值的兼容性报告。
 
-## License and Acknowledgments
+## 许可证与致谢
 
-Maintained by **Leminos ([mxhm11cr](https://github.com/mxhm11cr))**. LinuxRunner derives from [iSH](https://github.com/ish-app/ish), by Theodore Dubois and contributors, through [ios-linuxkit](https://github.com/rcarmo/ios-linuxkit), by Rui Carmo and contributors.
+由 **Leminos（[mxhm11cr](https://github.com/mxhm11cr)）** 维护。LinuxRunner 派生自 [iSH](https://github.com/ish-app/ish)（Theodore Dubois 及贡献者），经由 [ios-linuxkit](https://github.com/rcarmo/ios-linuxkit)（Rui Carmo 及贡献者）。
 
-The combined application is GPL-3.0-covered. Preserve upstream contribution-specific terms, copyright attribution and the App Store terms in [LICENSE.md](LICENSE.md) and [LICENSE.IOS](LICENSE.IOS). Third-party software retains its own licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Linux distributions, desktops and applications are the work of their respective projects.
+合并后的应用整体受 GPL-3.0 约束。请在 [LICENSE.md](LICENSE.md) 与 [LICENSE.IOS](LICENSE.IOS) 中保留上游贡献的特定条款、版权署名及 App Store 条款。第三方软件保留其自身许可证；参见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。Linux 发行版、桌面与应用属于各自项目的成果。

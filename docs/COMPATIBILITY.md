@@ -1,49 +1,49 @@
-# Compatibility
+# 兼容性
 
-LinuxRunner targets ARM64 Linux userspace on iPhone and iPad. Compatibility depends on the distribution, package version, operation and device resources. A package appearing in the catalog is not a successful test.
+LinuxRunner 面向 iPhone 与 iPad 上的 ARM64 Linux 用户空间。兼容性取决于发行版、包版本、操作与设备资源。出现在目录中的包不代表测试通过。
 
-## How to Read the Status
+## 如何解读状态
 
-**Launch reported** means a program opened; it does not validate all features. **Basic interaction** applies only to the listed actions. **Experimental** means incomplete or variable compatibility. No application below is represented as fully tested across devices and workloads.
+**已报告启动**表示程序打开了；它没有验证全部功能。**基础交互**仅适用于列出的操作。**实验性**表示兼容性不完整或有差异。下面没有任何应用被声明为已跨设备与负载完整测试。
 
-The maintainer identifies the latest physical-iPhone Arch/graphical/Telegram tests as **build 897**. The maintainer also confirms physical-iPad testing and Telegram login, messaging and calls on Arch. Exact device model, OS and artifact checksum were not supplied. Earlier screenshots were explicitly confirmed by the maintainer as physical-iPhone captures. They illustrate the experience rather than a full current-build regression test.
+维护者将最近的实体 iPhone Arch/图形/Telegram 测试标记为 **build 897**。维护者还确认了实体 iPad 测试，以及 Arch 上的 Telegram 登录、消息与通话。未提供确切的设备型号、系统与产物校验和。较早的截图已由维护者明确确认为实体 iPhone 实拍。它们用于示意体验，而非当前 build 的完整回归测试。
 
-## Devices
+## 设备
 
-| Area | Current status |
+| 方面 | 当前状态 |
 | --- | --- |
-| iPhone | Physical-device use reported by the maintainer, including Arch desktop on build 897. |
-| iPad | Device family 2, four orientations, window-aware viewer sizing, keyboard shortcuts and pointer handling are implemented. The maintainer confirms testing on a physical iPad. |
-| OS | Deployment target iOS/iPadOS 15.0. Every supported-looking version/model is not automatically qualified. An older iPhone 11/iOS 17 launch-black-screen report remains open. |
-| Input | Touch, on-screen keyboard, hardware keyboard and pointer paths exist. iPad support has been physically tested; accessory behavior can vary with the device and platform settings. |
+| iPhone | 维护者报告了实体设备使用，包括 build 897 上的 Arch 桌面。 |
+| iPad | 已实现设备族 2、四种方向、感知窗口的查看器尺寸、键盘快捷键与指针处理。维护者确认已在实体 iPad 上测试。 |
+| 系统 | 部署目标 iOS/iPadOS 15.0。看似支持的每个版本/机型都不自动视为已验证。较早的 iPhone 11/iOS 17 启动黑屏报告仍开放。 |
+| 输入 | 触摸、屏幕键盘、硬件键盘与指针路径均已存在。iPad 支持已实体测试；配件行为可能因设备与平台设置而异。 |
 
-## Distributions and Desktops
+## 发行版与桌面
 
-| Environment | Status | Limits |
+| 环境 | 状态 | 限制 |
 | --- | --- | --- |
-| Debian 13 ARM64 | Terminal, `apt` and LinuxRunner Desktop available | Recommended starting point; incomplete Linux ABI coverage. |
-| Debian KDE Plasma | Experimental; shown in supplied physical-iPhone captures | Higher memory use; no claim of a full v1.0.1 regression pass. |
-| Arch Linux ARM | Terminal/`pacman` integrated; desktop success reported on iPhone build 897 | Rolling packages can change compatibility; signed recovery covers specific supported damage patterns. |
-| Arch Openbox + LXQt Panel + PCManFM-Qt | Experimental; basic desktop/graphical launch success reported | Full LXQt session not claimed; preserve first-use launcher trust prompts. |
-| Arch Plasma / Wayland | Unavailable | No supported Wayland session integration. |
-| Alpine 3.24 ARM64 | Terminal and `apk` available | Desktop path remains experimental; no stable graphical claim. |
+| Debian 13 ARM64 | 终端、`apt` 与 LinuxRunner 桌面可用 | 推荐的起点；Linux ABI 覆盖不完整。 |
+| Debian KDE Plasma | 实验性；已出现在所提供的实体 iPhone 实拍中 | 内存占用更高；不声称完成 v1.0.1 完整回归。 |
+| Arch Linux ARM | 终端/`pacman` 已集成；在 iPhone build 897 上报告桌面成功 | 滚动包可能改变兼容性；签名恢复只覆盖特定支持的受损模式。 |
+| Arch Openbox + LXQt 面板 + PCManFM-Qt | 实验性；报告了基础桌面/图形启动成功 | 不声称完整 LXQt 会话；首次使用时保留启动器信任提示。 |
+| Arch Plasma / Wayland | 不可用 | 没有受支持的 Wayland 会话集成。 |
+| Alpine 3.24 ARM64 | 终端与 `apk` 可用 | 桌面路径仍为实验性；不承诺稳定的图形体验。 |
 
-## Applications
+## 应用
 
-| Application or group | Evidence | What remains unverified |
+| 应用或应用组 | 证据 | 尚未验证的内容 |
 | --- | --- | --- |
-| Shell and package tools | Available across the three environments; retained regression records cover package/filesystem/terminal operations | All tools and every installation/upgrade scenario on devices. |
-| PCManFM-Qt / Arch desktop components | Maintainer reports working Arch desktop and graphical launches on iPhone build 897; retained focused tests cover file-manager navigation, windows and reconnect | Exact device action checklist, long sessions and every file operation. |
-| Telegram Desktop | Maintainer-tested on Arch Linux ARM / physical-iPhone build 897: launch, login, sending messages and calls; supplied welcome-screen capture | Results apply to the tested configuration; other package/device combinations can vary. |
-| Dolphin / Konsole | Supplied KDE capture shows these applications | Complete v1.0.1 device regression coverage. |
-| Firefox | Supplied capture shows a public page | Broad website support, media, extensions and long sessions. |
-| Chromium | Available through supported distribution/package paths; experimental | A current build/device feature checklist. |
-| Blender | Supplied physical-iPhone capture shows the viewport | Rendering/export workflows, broad workloads and stability. |
-| Text editors and other catalog applications | Some focused development checks exist; the catalog distinguishes its evidence | Current physical-device validation for each application. |
-| Some Arch GTK/glycin applications | Known write-seal compatibility failures remain | Do not generalize Qt success to GTK compatibility. |
+| Shell 与包工具 | 三个环境均可用；保留的回归记录覆盖包/文件系统/终端操作 | 设备上所有工具与每个安装/升级场景。 |
+| PCManFM-Qt / Arch 桌面组件 | 维护者报告 iPhone build 897 上 Arch 桌面与图形启动成功；保留的专项测试覆盖文件管理器导航、窗口与重连 | 确切的设备操作清单、长会话与每个文件操作。 |
+| Telegram Desktop | 维护者在 Arch Linux ARM / 实体 iPhone build 897 上测试：启动、登录、发消息与通话；附有欢迎界面截图 | 结果仅适用于已测配置；其他包/设备组合可能不同。 |
+| Dolphin / Konsole | 所附 KDE 截图展示了这些应用 | 完整的 v1.0.1 设备回归覆盖。 |
+| Firefox | 所附截图展示了一个公开页面 | 广泛网站支持、媒体、扩展与长会话。 |
+| Chromium | 通过受支持的发行版/包路径可用；实验性 | 当前 build/设备的完整功能清单。 |
+| Blender | 所附实体 iPhone 截图展示视口 | 渲染/导出工作流、广泛负载与稳定性。 |
+| 文本编辑器及其他目录应用 | 存在部分专项开发检查；目录会区分其证据 | 每个应用的当前实体设备验证。 |
+| 部分 Arch GTK/glycin 应用 | 已知的写密封兼容失败仍然存在 | 不要由 Qt 的成功推断 GTK 兼容。 |
 
-## Graphics, Storage and Networking
+## 图形、存储与网络
 
-Mesa software rendering is the reference path. Metal acceleration supports selected OpenGL operations and remains experimental; full OpenGL/Vulkan compatibility is not claimed. Networking uses platform sockets and restrictions, not direct hardware access. File import/export and shared-folder integration exist; access is limited by selected permissions and the app's storage container.
+Mesa 软件渲染是参照路径。Metal 加速支持部分 OpenGL 操作，仍为实验性；不承诺完整的 OpenGL/Vulkan 兼容。网络使用平台 socket 及其限制，而非直接硬件访问。文件导入/导出与共享文件夹集成已存在；访问受所选权限与应用存储容器限制。
 
-Linux accounts and permissions are not a sandbox for hostile software. See [Known limitations](KNOWN_LIMITATIONS.md), [Security](../SECURITY.md) and [Troubleshooting](TROUBLESHOOTING.md).
+Linux 账户与权限不是面向恶意软件的沙箱。参见[已知限制](KNOWN_LIMITATIONS.md)、[安全](../SECURITY.md)与[故障排查](TROUBLESHOOTING.md)。

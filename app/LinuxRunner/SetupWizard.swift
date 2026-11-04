@@ -30,7 +30,7 @@ struct SetupWizardView: View {
         NavigationView {
             Form { content }
                 .navigationTitle(title)
-                .toolbar { ToolbarItem(placement: .cancellationAction) { Button(step == .done ? "Close" : "Later") { dismiss() }.disabled(working != nil || debian.running || arch.running || manager.busy) } }
+                .toolbar { ToolbarItem(placement: .cancellationAction) { Button(step == .done ? "关闭" : "稍后") { dismiss() }.disabled(working != nil || debian.running || arch.running || manager.busy) } }
         }
         .navigationViewStyle(.stack)
         .overlay(alignment: .bottom) { InstallProgressCard() }
@@ -40,42 +40,42 @@ struct SetupWizardView: View {
 
     private var title: String {
         switch step {
-        case .welcome: return "Welcome"; case .distribution: return "Choose Linux"; case .install: return "Install Linux"
-        case .relaunch: return "Restart LinuxRunner"; case .account: return "Your Account"; case .desktop: return "Desktop"; case .done: return "Ready"
+        case .welcome: return "欢迎"; case .distribution: return "选择 Linux"; case .install: return "安装 Linux"
+        case .relaunch: return "重启 LinuxRunner"; case .account: return "你的账户"; case .desktop: return "桌面"; case .done: return "就绪"
         }
     }
 
     @ViewBuilder private var content: some View {
         switch step {
         case .welcome:
-            Section { Text("LinuxRunner runs real ARM64 Linux programs on this iPhone with its own interpreter — no virtual machine.")
-                Text("Setup installs Linux, creates your account and prepares the graphical desktop. Everything can be changed later in Settings.").foregroundStyle(.secondary) }
-            if !manager.environments.isEmpty { Section { Text("Configure an existing environment or install another distribution. Your files and accounts are preserved.").font(.footnote) } }
-            Section { Button("Continue") { stepRaw = SetupStep.distribution.rawValue } }
+            Section { Text("LinuxRunner 通过内置的自定义解释器在本设备上运行真实的 ARM64 Linux 程序 — 无需虚拟机。")
+                Text("安装流程会安装 Linux、创建你的账户并准备图形桌面。之后可在设置中随时修改。").foregroundStyle(.secondary) }
+            if !manager.environments.isEmpty { Section { Text("可配置已有环境或安装另一个发行版。你的文件与账户都会被保留。").font(.footnote) } }
+            Section { Button("继续") { stepRaw = SetupStep.distribution.rawValue } }
         case .distribution:
-            Section(footer: Text("Debian is recommended. Arch Linux ARM provides a rolling release with pacman and an experimental X11 desktop. Alpine is small and mainly for the terminal. Wayland is not supported.")) {
-                Picker("Distribution", selection: $distribution) { Text("Debian GNU/Linux 13 (ARM64) — recommended").tag("debian"); Text("Arch Linux ARM (ARM64) — experimental").tag("arch"); Text("Alpine Linux 3.24 (ARM64)").tag("alpine") }.pickerStyle(.inline).labelsHidden()
+            Section(footer: Text("推荐使用 Debian。Arch Linux ARM 提供滚动发布、pacman 与实验性 X11 桌面。Alpine 小巧，主要用于终端。不支持 Wayland。")) {
+                Picker("发行版", selection: $distribution) { Text("Debian GNU/Linux 13 (ARM64) — 推荐").tag("debian"); Text("Arch Linux ARM (ARM64) — 实验性").tag("arch"); Text("Alpine Linux 3.24 (ARM64)").tag("alpine") }.pickerStyle(.inline).labelsHidden()
             }
             let installed = manager.environments.filter { ($0.distributionID ?? "alpine") == distribution }
             if !installed.isEmpty {
-                Section("Already Installed") {
+                Section("已安装") {
                     ForEach(installed) { environment in
-                        Button("Configure " + environment.name) { configureExisting(environment) }
+                        Button("配置 " + environment.name) { configureExisting(environment) }
                     }
-                    Text("Uses the existing environment, accounts and files. Switching environments takes effect after relaunch.").font(.footnote).foregroundStyle(.secondary)
+                    Text("使用现有环境、账户与文件。切换环境在重启后生效。").font(.footnote).foregroundStyle(.secondary)
                 }
             }
-            Section { Button(installed.isEmpty ? "Continue" : "Install Another Environment") { stepRaw = SetupStep.install.rawValue } }
+            Section { Button(installed.isEmpty ? "继续" : "安装另一个环境") { stepRaw = SetupStep.install.rawValue } }
         case .install: install
         case .relaunch:
-            Section { Text("Linux is installed and selected. Close LinuxRunner completely (swipe it away in the app switcher) and open it again — setup continues with your account.") }
-            Section { Text("iOS allows one Linux runtime per app launch, so this restart is needed once.").font(.footnote).foregroundStyle(.secondary) }
+            Section { Text("Linux 已安装并选定。请完全关闭 LinuxRunner（在应用切换器中上滑移除）并重新打开 — 安装将在此处继续你的账户设置。") }
+            Section { Text("iOS 每次启动应用只允许一个 Linux 运行时，因此需要重启一次。").font(.footnote).foregroundStyle(.secondary) }
         case .account: account
         case .desktop: desktop
         case .done:
-            Section { Label("Linux is ready", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
-                Text("Add applications any time from Packages › App Catalog.").font(.footnote).foregroundStyle(.secondary) }
-            Section { Button { stepRaw = SetupStep.welcome.rawValue; setupRoot = ""; dismiss(); openDesktop() } label: { Label("Open Desktop", systemImage: "desktopcomputer").font(.headline) }.disabled(!LRRuntimeBridge.isRunning()) }
+            Section { Label("Linux 已就绪", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
+                Text("可随时从 包 › 应用目录 添加应用。").font(.footnote).foregroundStyle(.secondary) }
+            Section { Button { stepRaw = SetupStep.welcome.rawValue; setupRoot = ""; dismiss(); openDesktop() } label: { Label("打开桌面", systemImage: "desktopcomputer").font(.headline) }.disabled(!LRRuntimeBridge.isRunning()) }
         }
         if let working { Section { HStack(spacing: 12) { ProgressView(); Text(working) } } }
         if let problem { Section { Text(problem).foregroundStyle(.red) } }
@@ -87,59 +87,59 @@ struct SetupWizardView: View {
         let alpineBytes = Int64((try? Bundle.main.url(forResource: "root", withExtension: "tar.gz")?.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0)
         let download = distribution == "debian" ? (manifest?.downloadBytes ?? 0) : 0
         let installed = distribution == "debian" ? (manifest?.installedBytes ?? 0) : alpineBytes * 3
-        Section("Storage") {
-            row("Download", distribution == "arch" ? "Calculated from the signed package selection" : distribution == "debian" ? ByteCountFormatter.string(fromByteCount: download, countStyle: .file) : "None (included in the app)")
-            row(distribution == "debian" ? "Installed size" : "Installed size (estimate)", distribution == "arch" ? "At least 1.5 GB free for base installation" : ByteCountFormatter.string(fromByteCount: installed, countStyle: .file))
-            row("Available", ByteCountFormatter.string(fromByteCount: free, countStyle: .file))
+        Section("存储") {
+            row("下载", distribution == "arch" ? "由签名包选择结果计算" : distribution == "debian" ? ByteCountFormatter.string(fromByteCount: download, countStyle: .file) : "无（已内置于应用中）")
+            row(distribution == "debian" ? "已安装大小" : "已安装大小（估计）", distribution == "arch" ? "基础安装至少需要 1.5 GB 可用空间" : ByteCountFormatter.string(fromByteCount: installed, countStyle: .file))
+            row("可用", ByteCountFormatter.string(fromByteCount: free, countStyle: .file))
         }
         if distribution == "debian" {
             Section {
-                if debian.running { Text(debian.message); ProgressView(value: debian.fraction); Button("Cancel", role: .destructive) { debian.cancel() } }
-                else { Button("Install Debian") { startInstall() }.disabled(free < max(Int64(1 << 30), download + installed)) }
-                if let failure = debian.failure { Text(failure).foregroundStyle(.red); Button("Try Again") { startInstall() } }
-            } footer: { Text("Official Debian packages, checked against Debian's signed index. The desktop, sound and account tools are added in the next steps.") }
+                if debian.running { Text(debian.message); ProgressView(value: debian.fraction); Button("取消", role: .destructive) { debian.cancel() } }
+                else { Button("安装 Debian") { startInstall() }.disabled(free < max(Int64(1 << 30), download + installed)) }
+                if let failure = debian.failure { Text(failure).foregroundStyle(.red); Button("重试") { startInstall() } }
+            } footer: { Text("官方 Debian 包，经 Debian 签名索引校验。桌面、声音与账户工具将在后续步骤安装。") }
         } else if distribution == "arch" {
             Section {
-                if arch.running { Text(arch.message); ProgressView(value: arch.fraction); Button("Cancel", role: .destructive) { arch.cancel() } }
-                else { Button("Install Arch Linux ARM") { startInstall() }.disabled(free < Int64(1_500_000_000)) }
-                if let failure = arch.failure { Text(failure).foregroundStyle(.red); Button("Try Again") { startInstall() } }
-            } footer: { Text("Official signed Arch Linux ARM packages. Verified downloads are kept for retry. First-start configuration finishes before desktop packages are installed.") }
+                if arch.running { Text(arch.message); ProgressView(value: arch.fraction); Button("取消", role: .destructive) { arch.cancel() } }
+                else { Button("安装 Arch Linux ARM") { startInstall() }.disabled(free < Int64(1_500_000_000)) }
+                if let failure = arch.failure { Text(failure).foregroundStyle(.red); Button("重试") { startInstall() } }
+            } footer: { Text("官方签名 Arch Linux ARM 包。已验证的下载会保留以供重试。首次启动配置完成前才会安装桌面包。") }
         } else {
-            Section { if manager.busy { ProgressView("Unpacking Alpine Linux…") } else { Button("Install Alpine") { startInstall() } }
+            Section { if manager.busy { ProgressView("正在解包 Alpine Linux…") } else { Button("安装 Alpine") { startInstall() } }
                 if let error = manager.error { Text(error).foregroundStyle(.red) } }
         }
     }
 
     @ViewBuilder private var account: some View {
         if !LRRuntimeBridge.isRunning() || (!setupRoot.isEmpty && LRRuntimeBridge.activeRootName() != setupRoot) {
-            Section { Text("Close LinuxRunner completely and open it again to continue.") }
+            Section { Text("请完全关闭 LinuxRunner 并重新打开以继续。") }
         } else {
             let existing = LRRuntimeBridge.linuxAccounts().filter { $0["name"] != "root" && ($0["uid"].flatMap(Int.init) ?? 0) >= 1000 }
             if !existing.isEmpty {
-                Section("Use an existing account") {
+                Section("使用已有账户") {
                     ForEach(existing, id: \.self) { account in Button(account["name"] ?? "") { useAccount(account["name"] ?? "") }.disabled(working != nil) }
                 }
             }
-            Section(existing.isEmpty ? "Create your account" : "Or create a new account") {
-                TextField("Username", text: $username).textInputAutocapitalization(.never).autocorrectionDisabled().textContentType(.username)
-                SecureField("Password", text: $password).textContentType(.newPassword)
-                SecureField("Confirm password", text: $confirmation).textContentType(.newPassword)
-                Toggle("Administrator (can use sudo)", isOn: $administrator)
-                Button("Create Account") { createAccount() }.disabled(working != nil || username.isEmpty || password.isEmpty || password != confirmation)
-                if !confirmation.isEmpty && password != confirmation { Text("The passwords do not match.").font(.footnote).foregroundStyle(.orange) }
+            Section(existing.isEmpty ? "创建你的账户" : "或创建新账户") {
+                TextField("用户名", text: $username).textInputAutocapitalization(.never).autocorrectionDisabled().textContentType(.username)
+                SecureField("密码", text: $password).textContentType(.newPassword)
+                SecureField("确认密码", text: $confirmation).textContentType(.newPassword)
+                Toggle("管理员（可使用 sudo）", isOn: $administrator)
+                Button("创建账户") { createAccount() }.disabled(working != nil || username.isEmpty || password.isEmpty || password != confirmation)
+                if !confirmation.isEmpty && password != confirmation { Text("两次输入的密码不一致。").font(.footnote).foregroundStyle(.orange) }
             }
-            Section { Text("Lowercase letters, digits, - and _. LinuxRunner stores only Linux's own password hash, never the password.").font(.footnote).foregroundStyle(.secondary) }
+            Section { Text("允许小写字母、数字、- 与 _。LinuxRunner 只存储 Linux 自身的密码哈希，从不保存密码明文。").font(.footnote).foregroundStyle(.secondary) }
         }
     }
 
     @ViewBuilder private var desktop: some View {
-        Section(footer: Text("Installs the display, window manager, panel, file manager and sound once (network needed). Existing settings are kept.")) {
-            HStack { Image(systemName: "checkmark.circle.fill").foregroundStyle(Color.accentColor); Text(LRRuntimeBridge.activeEnvironmentIsArch() ? "LinuxRunner Desktop (Openbox, LXQt panel, PCManFM-Qt)" : "LinuxRunner Desktop (Openbox, panel, file manager)") }
-            HStack { Image(systemName: "circle").foregroundStyle(.secondary); VStack(alignment: .leading) { Text("KDE Plasma"); Text(LRRuntimeBridge.activeEnvironmentIsArch() ? "Unavailable: current Arch Plasma requires Wayland; use the X11 desktop above." : "Experimental · install later in Settings › Desktop Environment").font(.caption).foregroundStyle(.secondary) } }
+        Section(footer: Text("一次性安装显示、窗口管理器、面板、文件管理器与声音（需要网络）。已有设置会保留。")) {
+            HStack { Image(systemName: "checkmark.circle.fill").foregroundStyle(Color.accentColor); Text(LRRuntimeBridge.activeEnvironmentIsArch() ? "LinuxRunner 桌面（Openbox、LXQt 面板、PCManFM-Qt）" : "LinuxRunner 桌面（Openbox、面板、文件管理器）") }
+            HStack { Image(systemName: "circle").foregroundStyle(.secondary); VStack(alignment: .leading) { Text("KDE Plasma"); Text(LRRuntimeBridge.activeEnvironmentIsArch() ? "不可用：当前 Arch Plasma 需要 Wayland；请使用上方 X11 桌面。" : "实验性 · 之后可在 设置 › 桌面环境 中安装").font(.caption).foregroundStyle(.secondary) } }
         }
         Section {
-            if desktopReady { Label("Desktop components installed", systemImage: "checkmark") ; Button("Continue") { stepRaw = SetupStep.done.rawValue } }
-            else { Button("Install Desktop Components") { prepareDesktop() }.disabled(working != nil) }
+            if desktopReady { Label("桌面组件已安装", systemImage: "checkmark") ; Button("继续") { stepRaw = SetupStep.done.rawValue } }
+            else { Button("安装桌面组件") { prepareDesktop() }.disabled(working != nil) }
         }
     }
 
@@ -179,7 +179,7 @@ struct SetupWizardView: View {
     }
 
     private func createAccount() {
-        problem = nil; working = "Preparing"
+        problem = nil; working = "准备中"
         LRRuntimeBridge.createLinuxUser(username, password: password, administrator: administrator, progress: { working = $0 }) { error in
             working = nil
             if let error { problem = error.localizedDescription; return }
@@ -194,7 +194,7 @@ struct SetupWizardView: View {
     }
 
     private func prepareDesktop() {
-        problem = nil; working = "Starting"
+        problem = nil; working = "正在启动"
         LRRuntimeBridge.prepareDesktopProfile({ working = $0 }) { error in
             working = nil
             if let error { problem = error.localizedDescription } else { desktopReady = true }

@@ -28,37 +28,37 @@ enum AlarmSignature {
     struct Key { let secKey: SecKey; let modulusBytes: Int }
 
     static func key() throws -> Key {
-        guard let body = Data(base64Encoded: keyPacket), body.count > 10, body[0] == 4, body[5] == 1 else { throw ArchInstallError.failure("Embedded Arch Linux ARM key is malformed.") }
+        guard let body = Data(base64Encoded: keyPacket), body.count > 10, body[0] == 4, body[5] == 1 else { throw ArchInstallError.failure("内嵌的 Arch Linux ARM 密钥格式无效。") }
         var header = Data([0x99, UInt8(body.count >> 8), UInt8(body.count & 0xff)]); header.append(body)
         let fpr = Insecure.SHA1.hash(data: header).map { String(format: "%02X", $0) }.joined()
-        guard fpr == fingerprint else { throw ArchInstallError.failure("Embedded Arch Linux ARM key does not match its fingerprint.") }
+        guard fpr == fingerprint else { throw ArchInstallError.failure("内嵌的 Arch Linux ARM 密钥与其指纹不匹配。") }
         var cursor = 6
-        guard let n = mpi(body, &cursor), let e = mpi(body, &cursor) else { throw ArchInstallError.failure("Embedded Arch Linux ARM key is malformed.") }
+        guard let n = mpi(body, &cursor), let e = mpi(body, &cursor) else { throw ArchInstallError.failure("内嵌的 Arch Linux ARM 密钥格式无效。") }
         let der = sequence(integer(n) + integer(e))   // PKCS#1 RSAPublicKey
         let attributes: [CFString: Any] = [kSecAttrKeyType: kSecAttrKeyTypeRSA, kSecAttrKeyClass: kSecAttrKeyClassPublic, kSecAttrKeySizeInBits: n.count * 8]
         var error: Unmanaged<CFError>?
-        guard let secKey = SecKeyCreateWithData(der as CFData, attributes as CFDictionary, &error) else { throw ArchInstallError.failure("Arch Linux ARM key could not be loaded.") }
+        guard let secKey = SecKeyCreateWithData(der as CFData, attributes as CFDictionary, &error) else { throw ArchInstallError.failure("无法加载 Arch Linux ARM 密钥。") }
         return Key(secKey: secKey, modulusBytes: n.count)
     }
 
     /// Verifies a detached binary signature over the file. Throws on any failure.
     static func verify(file: URL, signature: Data, key: Key) throws {
         var c = 0
-        guard let packet = packetBody(signature, &c, expectedTag: 2) else { throw ArchInstallError.failure("Invalid package signature packet.") }
-        guard packet.count > 10, packet[0] == 4, packet[1] == 0x00, packet[2] == 1, [8, 10].contains(packet[3]) else { throw ArchInstallError.failure("Unsupported package signature (need v4 RSA binary signature, SHA-256/512).") }
+        guard let packet = packetBody(signature, &c, expectedTag: 2) else { throw ArchInstallError.failure("无效的包签名字段。") }
+        guard packet.count > 10, packet[0] == 4, packet[1] == 0x00, packet[2] == 1, [8, 10].contains(packet[3]) else { throw ArchInstallError.failure("不支持的包签名（需要 v4 RSA 二进制签名，SHA-256/512）。") }
         let hashedLength = Int(packet[4]) << 8 | Int(packet[5])
-        guard 6 + hashedLength + 2 <= packet.count else { throw ArchInstallError.failure("Truncated package signature.") }
+        guard 6 + hashedLength + 2 <= packet.count else { throw ArchInstallError.failure("包签名被截断。") }
         let hashed = packet.subdata(in: 6..<(6 + hashedLength))
         let unhashedLength = Int(packet[6 + hashedLength]) << 8 | Int(packet[7 + hashedLength])
         var p = 8 + hashedLength + unhashedLength
-        guard p + 2 <= packet.count else { throw ArchInstallError.failure("Truncated package signature.") }
+        guard p + 2 <= packet.count else { throw ArchInstallError.failure("包签名被截断。") }
         let unhashed = packet.subdata(in: (8 + hashedLength)..<p)
         let left16 = packet.subdata(in: p..<(p + 2)); p += 2
-        guard let sig = mpi(packet, &p) else { throw ArchInstallError.failure("Truncated package signature.") }
+        guard let sig = mpi(packet, &p) else { throw ArchInstallError.failure("包签名被截断。") }
         // Issuer must be the Arch Linux ARM key; unknown critical subpackets reject.
         let issuer = try subpackets(hashed, critical: true) + (try subpackets(unhashed, critical: false))
         let keyID = String(fingerprint.suffix(16))
-        guard issuer.contains(fingerprint) || issuer.contains(keyID) else { throw ArchInstallError.failure("Package is not signed by the Arch Linux ARM key.") }
+        guard issuer.contains(fingerprint) || issuer.contains(keyID) else { throw ArchInstallError.failure("该包未经 Arch Linux ARM 密钥签名。") }
         var trailer = Data(packet.prefix(6 + hashedLength))
         trailer.append(contentsOf: [0x04, 0xff]); let l = UInt32(6 + hashedLength)
         trailer.append(contentsOf: [UInt8(l >> 24), UInt8((l >> 16) & 0xff), UInt8((l >> 8) & 0xff), UInt8(l & 0xff)])
@@ -71,10 +71,10 @@ enum AlarmSignature {
             var h = SHA256(); while let d = try handle.read(upToCount: 1 << 20), !d.isEmpty { h.update(data: d) }; h.update(data: trailer)
             digest = Data(h.finalize()); algorithm = .rsaSignatureDigestPKCS1v15SHA256
         }
-        guard digest.prefix(2) == left16 else { throw ArchInstallError.failure("Package signature does not match the file.") }
+        guard digest.prefix(2) == left16 else { throw ArchInstallError.failure("包签名与文件不匹配。") }
         let padded = Data(repeating: 0, count: max(0, key.modulusBytes - sig.count)) + sig
         var error: Unmanaged<CFError>?
-        guard SecKeyVerifySignature(key.secKey, algorithm, digest as CFData, padded as CFData, &error) else { throw ArchInstallError.failure("Package signature is invalid.") }
+        guard SecKeyVerifySignature(key.secKey, algorithm, digest as CFData, padded as CFData, &error) else { throw ArchInstallError.failure("包签名无效。") }
     }
 
     // MARK: OpenPGP encoding helpers
@@ -107,14 +107,14 @@ enum AlarmSignature {
             let l0 = Int(d[c]); c += 1; var len = 0
             if l0 < 192 { len = l0 } else if l0 < 255 { guard c < d.count else { break }; len = ((l0 - 192) << 8) + Int(d[c]) + 192; c += 1 }
             else { guard c + 4 <= d.count else { break }; len = d[c..<(c + 4)].reduce(0) { $0 << 8 | Int($1) }; c += 4 }
-            guard len >= 1, c + len <= d.count else { throw ArchInstallError.failure("Malformed signature subpacket.") }
+            guard len >= 1, c + len <= d.count else { throw ArchInstallError.failure("签名字包格式无效。") }
             let type = Int(d[c] & 0x7f), isCritical = d[c] & 0x80 != 0
             let value = d.subdata(in: (c + 1)..<(c + len)); c += len
             switch type {
             case 33 where value.count == 21 && value[0] == 4: out.append(value.dropFirst().map { String(format: "%02X", $0) }.joined())
             case 16 where value.count == 8: out.append(value.map { String(format: "%02X", $0) }.joined())
             case 2, 3, 4, 9, 11, 16, 20, 21, 22, 23, 26, 27, 28, 30, 31, 32, 33: break
-            default: if isCritical && critical { throw ArchInstallError.failure("Unsupported critical signature subpacket \(type).") }
+            default: if isCritical && critical { throw ArchInstallError.failure("不支持的关键签名字包 \(type)。") }
             }
         }
         return out
@@ -180,7 +180,7 @@ enum ArchResolver {
         var order: [ArchPackage] = []; var seen = Set<String>(); var stack = wanted.reversed().map { $0 }
         while let dep = stack.popLast() {
             let bare = stripVersion(dep)
-            guard let name = packages[bare] != nil ? bare : provides[bare] else { throw ArchInstallError.failure("Arch Linux ARM dependency cannot be resolved: \(bare)") }
+            guard let name = packages[bare] != nil ? bare : provides[bare] else { throw ArchInstallError.failure("无法解析 Arch Linux ARM 依赖：\(bare)") }
             if !seen.insert(name).inserted { continue }
             let p = packages[name]!; order.append(p)
             stack.append(contentsOf: (p.fields["DEPENDS"] ?? []).reversed())
@@ -197,7 +197,7 @@ private final class ArchCancellation: @unchecked Sendable {
 
 @MainActor final class ArchInstaller: ObservableObject {
     static let mirrors = ["https://fl.us.mirror.archlinuxarm.org/aarch64", "https://de.mirror.archlinuxarm.org/aarch64", "https://eu.mirror.archlinuxarm.org/aarch64"]
-    @Published var message = "Arch Linux ARM (aarch64) · official signed packages · experimental"
+    @Published var message = "Arch Linux ARM (aarch64) · 官方签名包 · 实验性"
     @Published var fraction = 0.0
     @Published var running = false { didSet { if running != oldValue { running ? LRRuntimeBridge.beginAwake("arch-install") : LRRuntimeBridge.endAwake("arch-install") } } }
     @Published var failure: String?
@@ -206,7 +206,7 @@ private final class ArchCancellation: @unchecked Sendable {
     func cancel() { cancellation.cancel(); operation?.cancel() }
 
     private static func fetch(_ path: String, to destination: URL) async throws {
-        var lastError = "no mirror reachable"
+        var lastError = "没有可连接的镜像"
         for mirror in mirrors {
             guard let url = URL(string: mirror + "/" + path) else { continue }
             do {
@@ -219,7 +219,7 @@ private final class ArchCancellation: @unchecked Sendable {
                 return
             } catch { lastError = error.localizedDescription }
         }
-        throw ArchInstallError.failure("Download failed for \(path): \(lastError)")
+        throw ArchInstallError.failure("\(path) 下载失败：\(lastError)")
     }
 
     func install(completion: @escaping (LinuxEnvironment) -> Void) {
@@ -232,12 +232,12 @@ private final class ArchCancellation: @unchecked Sendable {
                 let key = try AlarmSignature.key()
                 let base = LRRuntimeBridge.managedStorageURL()
                 let available = try base.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]).volumeAvailableCapacityForImportantUsage ?? 0
-                guard available >= Int64(1536) * 1024 * 1024 else { throw ArchInstallError.failure("At least 1.5 GB of available storage is required.") }
+                guard available >= Int64(1536) * 1024 * 1024 else { throw ArchInstallError.failure("至少需要 1.5 GB 可用存储空间。") }
                 let cache = base.appendingPathComponent("downloads/archlinuxarm-aarch64", isDirectory: true)
                 let temporary = base.appendingPathComponent("installer-temporary", isDirectory: true)
                 try FileManager.default.createDirectory(at: cache, withIntermediateDirectories: true)
                 try FileManager.default.createDirectory(at: temporary, withIntermediateDirectories: true)
-                message = "Reading the Arch Linux ARM package index"
+                message = "正在读取 Arch Linux ARM 包索引"
                 var packages: [String: ArchPackage] = [:]
                 for repo in ["core", "alarm", "extra"] {
                     try Task.checkCancellation()
@@ -255,16 +255,16 @@ private final class ArchCancellation: @unchecked Sendable {
                     try Task.checkCancellation(); if token.check() { throw CancellationError() }
                     guard package.filename.hasSuffix(".pkg.tar.xz"), !package.filename.contains("/"), package.sha256.count == 64,
                           let sig = Data(base64Encoded: (package.fields["PGPSIG"] ?? []).joined()) else {
-                        throw ArchInstallError.failure("Unsupported or unsigned package entry: \(package.name)")
+                        throw ArchInstallError.failure("不支持或未签名的包条目：\(package.name)")
                     }
-                    message = "Downloading/verifying \(package.name) (\(index + 1)/\(order.count))"
+                    message = "下载/校验 \(package.name) (\(index + 1)/\(order.count))"
                     fraction = total > 0 ? Double(done) / Double(total) * 0.6 : 0
                     let destination = cache.appendingPathComponent(package.filename)
                     if (try? DebianInstaller.sha256(destination)) != package.sha256 {
                         try await Self.fetch("\(package.repository)/\(package.filename)", to: destination)
                     }
                     let sha = try DebianInstaller.sha256(destination)
-                    guard sha == package.sha256 else { throw ArchInstallError.failure("Integrity verification failed for \(package.name): SHA-256 mismatch.") }
+                    guard sha == package.sha256 else { throw ArchInstallError.failure("\(package.name) 完整性校验失败：SHA-256 不匹配。") }
                     try await Task.detached(priority: .utility) { try AlarmSignature.verify(file: destination, signature: sig, key: key) }.value
                     DiagnosticCenter.installer(2, message: "stage=arch_verify package=\(package.name) version=\(package.version) sha256=\(sha) signature=PASS")
                     paths.append(destination.path); names.append("\(package.name)-\(package.version)")
@@ -274,12 +274,12 @@ private final class ArchCancellation: @unchecked Sendable {
                 let root = UUID().uuidString.lowercased()
                 let archive = temporary.appendingPathComponent("\(root).tar.gz")
                 defer { try? FileManager.default.removeItem(at: archive) }
-                message = "Assembling verified Arch Linux ARM packages"
+                message = "正在组装已校验的 Arch Linux ARM 包"
                 try await Task.detached(priority: .utility) {
                     try LRRuntimeBridge.assembleArchPackages(paths, localNames: names, localDescriptions: descriptions, toArchive: archive,
                                                              progress: { value in Task { @MainActor in self.fraction = 0.6 + value * 0.2 } }, cancel: { token.check() })
                 }.value
-                message = "Importing isolated Arch Linux ARM filesystem"
+                message = "正在导入隔离的 Arch Linux ARM 文件系统"
                 let sha = try DebianInstaller.sha256(archive)
                 let metadata = ["distributionID": "arch", "distribution": "Arch Linux ARM", "version": "rolling", "packageManager": "pacman", "defaultShell": "/bin/bash"]
                 try await Task.detached(priority: .utility) {
@@ -289,17 +289,17 @@ private final class ArchCancellation: @unchecked Sendable {
                 var environment = LinuxEnvironment(name: "Arch Linux ARM", rootfsName: root)
                 environment.distribution = "Arch Linux ARM"; environment.distributionID = "arch"; environment.packageManager = "pacman"
                 environment.rootfsVersion = "rolling"; environment.defaultShell = "/bin/bash"
-                environment.installationState = "Imported; first-boot initialization runs automatically"
-                environment.guiAvailability = "Not checked"; environment.desktopAvailability = "Desktop components not installed"
+                environment.installationState = "已导入；首次启动初始化将自动运行"
+                environment.guiAvailability = "未检查"; environment.desktopAvailability = "桌面组件未安装"
                 completion(environment)
-                message = "Imported. Select Arch Linux ARM for the next launch; initialization runs automatically."
+                message = "已导入。下次启动时选择 Arch Linux ARM；初始化将自动运行。"
                 fraction = 1
-                LRRuntimeBridge.logCategory("INSTALL", event: "Arch Linux ARM verified package import completed")
+                LRRuntimeBridge.logCategory("INSTALL", event: "Arch Linux ARM 签名包导入完成")
             } catch {
-                failure = error is CancellationError || token.check() ? "Installation cancelled. Verified downloads are kept for retry." : error.localizedDescription
+                failure = error is CancellationError || token.check() ? "安装已取消。已验证的下载会保留以供重试。" : error.localizedDescription
                 DiagnosticCenter.installer(0, message: "stage=arch_installer_failure reason=\(failure ?? error.localizedDescription)")
                 DiagnosticCenter.flush()
-                LRRuntimeBridge.logCategory("INSTALL", event: failure ?? "Arch installation failed")
+                LRRuntimeBridge.logCategory("INSTALL", event: failure ?? "Arch 安装失败")
             }
         }
     }
@@ -310,12 +310,12 @@ struct ArchInstallerView: View {
     let completion: (LinuxEnvironment) -> Void
     var body: some View {
         List {
-            Text("Arch Linux ARM · aarch64 · rolling release")
-            Text("Experimental. Downloads official Arch Linux ARM packages; each must match its SHA-256 and carry a valid signature by the Arch Linux ARM Build System key. Use Set Up Linux to configure an account and install X11 desktop components. Wayland is not supported. Requires 1.5 GB free space. Existing environments are kept.").font(.footnote)
+            Text("Arch Linux ARM · aarch64 · 滚动发布")
+            Text("实验性。下载官方 Arch Linux ARM 包；每个包必须与 SHA-256 匹配并带有 Arch Linux ARM 构建系统密钥的有效签名。请使用"安装 Linux"配置账户并安装 X11 桌面组件。不支持 Wayland。需要 1.5 GB 可用空间。已有环境会被保留。").font(.footnote)
             Text(installer.message)
-            if installer.running { ProgressView(value: installer.fraction); Button("Cancel Installation") { installer.cancel() } }
-            else { Button("Install Arch Linux ARM") { installer.install(completion: completion) } }
+            if installer.running { ProgressView(value: installer.fraction); Button("取消安装") { installer.cancel() } }
+            else { Button("安装 Arch Linux ARM") { installer.install(completion: completion) } }
             if let failure = installer.failure { Text(failure).foregroundColor(.red) }
-        }.navigationTitle("Install Arch Linux ARM")
+        }.navigationTitle("安装 Arch Linux ARM")
     }
 }

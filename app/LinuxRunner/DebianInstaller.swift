@@ -21,14 +21,14 @@ struct DebianManifest: Decodable {
     let installedBytes: Int64
     let packages: [DebianPackage]
     static func load() throws -> Self {
-        guard let bundle = Bundle.main.url(forResource: "DebianSupport", withExtension: "bundle") else { throw DebianInstallError.failure("Bundled authenticated Debian manifest is missing.") }
+        guard let bundle = Bundle.main.url(forResource: "DebianSupport", withExtension: "bundle") else { throw DebianInstallError.failure("捆绑的经认证的 Debian 清单缺失。") }
         let data = try Data(contentsOf: bundle.appendingPathComponent("manifest.json"))
         let digest = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
         let pin = try String(contentsOf: bundle.appendingPathComponent("manifest.sha256")).trimmingCharacters(in: .whitespacesAndNewlines)
-        guard digest == pin else { throw DebianInstallError.failure("Debian manifest integrity mismatch.") }
+        guard digest == pin else { throw DebianInstallError.failure("Debian 清单完整性校验不一致。") }
         let manifest = try JSONDecoder().decode(Self.self, from: data)
         guard manifest.schema == 1, manifest.architecture == "arm64", manifest.repository == "https://deb.debian.org/debian/", !manifest.packages.isEmpty,
-              manifest.packages.allSatisfy({ $0.Filename.hasPrefix("pool/") && !$0.Filename.split(separator: "/").contains("..") && ["arm64", "all"].contains($0.Architecture) && $0.SHA256.count == 64 && Int64($0.Size) != nil && $0.Package.range(of: "^[a-z0-9][a-z0-9+.-]+$", options: .regularExpression) != nil }) else { throw DebianInstallError.failure("Unsupported Debian manifest.") }
+              manifest.packages.allSatisfy({ $0.Filename.hasPrefix("pool/") && !$0.Filename.split(separator: "/").contains("..") && ["arm64", "all"].contains($0.Architecture) && $0.SHA256.count == 64 && Int64($0.Size) != nil && $0.Package.range(of: "^[a-z0-9][a-z0-9+.-]+$", options: .regularExpression) != nil }) else { throw DebianInstallError.failure("不支持的 Debian 清单。") }
         return manifest
     }
 }
@@ -42,7 +42,7 @@ private final class InstallCancellation: @unchecked Sendable {
     func check() -> Bool { lock.lock(); defer { lock.unlock() }; return stopped }
 }
 @MainActor final class DebianInstaller: ObservableObject {
-    @Published var message = "Debian 13.7 ARM64 · authenticated official packages"
+    @Published var message = "Debian 13.7 ARM64 · 经认证的官方包"
     @Published var fraction = 0.0
     @Published var running = false { didSet { if running != oldValue { running ? LRRuntimeBridge.beginAwake("debian-install") : LRRuntimeBridge.endAwake("debian-install") } } }
     @Published var failure: String?
@@ -61,7 +61,7 @@ private final class InstallCancellation: @unchecked Sendable {
                 let available = try base.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]).volumeAvailableCapacityForImportantUsage ?? 0
                 let required = max(Int64(1024 * 1024 * 1024), manifest.downloadBytes + manifest.installedBytes * 4)
                 DiagnosticCenter.installer(2, message: "stage=space_check available_bytes=\(available) required_bytes=\(required) host_page=\(getpagesize()) guest_page=4096 cancelled=\(token.check())")
-                guard available >= required else { throw DebianInstallError.failure("At least \(ByteCountFormatter.string(fromByteCount: required, countStyle: .file)) of available storage is required.") }
+                guard available >= required else { throw DebianInstallError.failure("至少需要 \(ByteCountFormatter.string(fromByteCount: required, countStyle: .file)) 可用存储空间。") }
                 let cache = base.appendingPathComponent("downloads/debian-trixie-arm64", isDirectory: true)
                 let temporary = base.appendingPathComponent("installer-temporary", isDirectory: true)
                 try FileManager.default.createDirectory(at: cache, withIntermediateDirectories: true)
@@ -74,7 +74,7 @@ private final class InstallCancellation: @unchecked Sendable {
                 var paths: [String] = []
                 for (index, package) in manifest.packages.enumerated() {
                     try Task.checkCancellation(); if token.check() { throw CancellationError() }
-                    message = "Downloading/verifying \(package.Package) (\(index + 1)/\(manifest.packages.count))"
+                    message = "下载/校验 \(package.Package) (\(index + 1)/\(manifest.packages.count))"
                     fraction = Double(index) / Double(manifest.packages.count) * 0.55
                     let destination = cache.appendingPathComponent(package.Package + ".deb")
                     let cached = try? Self.verification(destination, package: package)
@@ -89,10 +89,10 @@ private final class InstallCancellation: @unchecked Sendable {
                         defer { try? FileManager.default.removeItem(at: download) }
                         let http = (response as? HTTPURLResponse)?.statusCode ?? -1
                         DiagnosticCenter.installer(2, message: "stage=http package=\(package.Package) index=\(index) status=\(http) received_file=\(download.path)")
-                        guard http == 200 else { throw DebianInstallError.failure("Download failed for \(package.Package): HTTP \(http).") }
+                        guard http == 200 else { throw DebianInstallError.failure("\(package.Package) 下载失败：HTTP \(http)。") }
                         let checked = try Self.verification(download, package: package)
                         DiagnosticCenter.installer(checked.valid ? 2 : 0, message: "stage=verification package=\(package.Package) index=\(index) expected_size=\(package.Size) actual_size=\(checked.size) expected_sha256=\(package.SHA256) actual_sha256=\(checked.sha) result=\(checked.valid ? "PASS" : "FAIL")")
-                        guard checked.valid else { throw DebianInstallError.failure("Integrity verification failed for \(package.Package): expected \(package.Size) bytes, received \(checked.size); SHA-256 \(checked.sha == package.SHA256 ? "matches" : "mismatch").") }
+                        guard checked.valid else { throw DebianInstallError.failure("\(package.Package) 完整性校验失败: expected \(package.Size) bytes, received \(checked.size); SHA-256 \(checked.sha == package.SHA256 ? "matches" : "mismatch").") }
                         do {
                             try? FileManager.default.removeItem(at: destination)
                             try FileManager.default.moveItem(at: download, to: destination)
@@ -100,14 +100,14 @@ private final class InstallCancellation: @unchecked Sendable {
                     }
                     paths.append(destination.path)
                 }
-                message = "Assembling verified Debian packages"
+                message = "正在组装已校验的 Debian 包"
                 let assemblySpace = try temporary.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]).volumeAvailableCapacityForImportantUsage ?? 0
                 DiagnosticCenter.installer(2, message: "stage=assemble package_count=\(paths.count) output=\(archive.path) available_bytes=\(assemblySpace) cancelled=\(token.check())")
                 try await Task.detached(priority: .utility) {
                     try LRRuntimeBridge.assembleDebianPackages(paths, toArchive: archive, progress: { value in Task { @MainActor in self.fraction = 0.55 + value * 0.2 } }, cancel: { token.check() })
                 }.value
                 if token.check() { throw CancellationError() }
-                message = "Importing isolated Debian filesystem"
+                message = "正在导入隔离的 Debian 文件系统"
                 DiagnosticCenter.installer(2, message: "stage=fakefs_import root=\(root) output=\(archive.path) cancelled=\(token.check())")
                 let sha = try Self.sha256(archive)
                 try await Task.detached(priority: .utility) {
@@ -120,7 +120,7 @@ private final class InstallCancellation: @unchecked Sendable {
                 environment.installationState = "Imported; package configuration runs on first boot"
                 environment.guiAvailability = "Not installed"; environment.desktopAvailability = "Not installed"
                 completion(environment)
-                message = "Imported. Select Debian for the next launch; package configuration runs automatically."
+                message = "已导入。下次启动时选择 Debian；包配置将自动运行。"
                 fraction = 1
                 // Only authenticated, completed installer downloads are removed.
                 try? FileManager.default.removeItem(at: cache)
@@ -154,13 +154,13 @@ struct DebianInstallerView: View {
     var body: some View {
         List {
             Text("Debian GNU/Linux 13.7 (trixie) · ARM64")
-            Text("Downloads official Debian packages from a bundled manifest authenticated against Debian's signed release and SHA-256 package index. Requires at least 1 GB free space. Alpine remains installed.").font(.footnote)
+            Text("从捆绑清单下载官方 Debian 包，该清单基于 Debian 的签名发布与 SHA-256 包索引进行认证。至少需要 1 GB 可用空间。Alpine 仍保持已安装状态。").font(.footnote)
             Text(installer.message)
-            if installer.running { ProgressView(value: installer.fraction); Button("Cancel Installation") { installer.cancel() } }
-            else { Button("Install Debian ARM64") { installer.install(completion: completion) } }
+            if installer.running { ProgressView(value: installer.fraction); Button("取消安装") { installer.cancel() } }
+            else { Button("安装 Debian ARM64") { installer.install(completion: completion) } }
             if let failure = installer.failure { Text(failure).foregroundColor(.red) }
-            NavigationLink("Export Installer Diagnostics", destination: DeveloperDiagnosticsView())
-            Text("Choose Export Full Diagnostic Bundle in diagnostics. It includes a bounded Debian installer log. DEBUG enables per-entry archive tracing.").font(.footnote)
-        }.navigationTitle("Install Debian")
+            NavigationLink("导出安装器诊断", destination: DeveloperDiagnosticsView())
+            Text("请在诊断中选择"导出完整诊断包"。其中包含有界的 Debian 安装器日志。DEBUG 可启用逐条目的归档跟踪。").font(.footnote)
+        }.navigationTitle("安装 Debian")
     }
 }
