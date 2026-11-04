@@ -1,0 +1,64 @@
+# Build the LinuxRunner IPA from source on a macos runner.
+#
+# LinuxRunner has no public CI workflow in upstream, so this job reproduces the
+# documented offline build (docs/BUILDING.md):
+#   scripts/bootstrap-macos.sh        # toolchain + pinned submodule deps
+#   scripts/build-ipa.sh --unsigned   # xcodebuild archive -> ad-hoc signed IPA
+#   scripts/verify-ipa.py            # structural + fingerprint validation
+#
+# Run it manually (it is not triggered on PR push) so the translated branch can
+# produce a reproducible, verifiable artifact without an Apple team.
+
+name: Build IPA (zh-Hans)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ipa:
+    name: Build unsigned IPA on macOS
+    runs-on: macos-15
+    timeout-minutes: 120
+    steps:
+      - name: Check out source (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Show toolchain
+        run: |
+          sw_vers
+          xcodebuild -version || true
+          git --version
+          cmake --version || true
+
+      - name: Bootstrap toolchain and pinned dependencies
+        run: scripts/bootstrap-macos.sh
+
+      - name: Build ad-hoc signed IPA (unsigned mode)
+        run: scripts/build-ipa.sh --unsigned
+
+      - name: Verify IPA structure and source fingerprint
+        run: python3 scripts/verify-ipa.py build/releases
+
+      - name: Print artifact location and checksum
+        run: |
+          ls -lh build/releases
+          shasum -a 256 build/releases/*.ipa || true
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: LinuxRunner-zh-Hans-ipa
+          path: build/releases/*.ipa
+          if-no-files-found: error
+
+      - name: Upload validation reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: LinuxRunner-zh-Hans-reports
+          path: |
+            build/releases/*.log
+            build/releases/*.report
+          if-no-files-found: ignore
