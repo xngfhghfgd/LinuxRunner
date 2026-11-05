@@ -13,6 +13,13 @@ name: Build IPA (zh-Hans)
 
 on:
   workflow_dispatch:
+  push:
+    branches: [ zh-Hans ]
+  pull_request:
+    branches: [ zh-Hans ]
+
+# Fork-of-fork note: forks inherit upstream's disabled Actions; this file is
+# inert until Actions are enabled on xngfhghfgd/LinuxRunner.
 
 jobs:
   build-ipa:
