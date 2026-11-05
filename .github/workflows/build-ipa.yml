@@ -14,10 +14,6 @@ name: Build IPA (zh-Hans)
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ zh-Hans ]
-  pull_request:
-    branches: [ zh-Hans ]
 
 jobs:
   build-ipa:
