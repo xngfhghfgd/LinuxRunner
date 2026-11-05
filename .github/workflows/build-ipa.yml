@@ -2,12 +2,13 @@
 #
 # LinuxRunner has no public CI workflow in upstream, so this job reproduces the
 # documented offline build (docs/BUILDING.md):
-#   scripts/bootstrap-macos.sh        # toolchain + pinned submodule deps
-#   scripts/build-ipa.sh --unsigned   # xcodebuild archive -> ad-hoc signed IPA
-#   scripts/verify-ipa.py            # structural + fingerprint validation
+#   1. install meson + lld           (bootstrap-macos.sh only checks, not installs)
+#   2. select the Xcode version the build was authored against
+#   3. scripts/bootstrap-macos.sh    (toolchain + pinned submodule deps)
+#   4. scripts/build-ipa.sh --unsigned (xcodebuild archive -> ad-hoc signed IPA)
+#   5. scripts/verify-ipa.py         (structural + fingerprint validation)
 #
-# Run it manually (it is not triggered on PR push) so the translated branch can
-# produce a reproducible, verifiable artifact without an Apple team.
+# Manual + push/PR triggers on zh-Hans.
 
 name: Build IPA (zh-Hans)
 
@@ -18,14 +19,11 @@ on:
   pull_request:
     branches: [ zh-Hans ]
 
-# Fork-of-fork note: forks inherit upstream's disabled Actions; this file is
-# inert until Actions are enabled on xngfhghfgd/LinuxRunner.
-
 jobs:
   build-ipa:
     name: Build unsigned IPA on macOS
     runs-on: macos-15
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - name: Check out source (with submodules)
         uses: actions/checkout@v4
@@ -38,6 +36,24 @@ jobs:
           xcodebuild -version || true
           git --version
           cmake --version || true
+
+      - name: Install missing toolchain (meson + ld.lld)
+        run: |
+          brew install meson lld
+          # ld.lld binary layout: homebrew may place it as ld.lld-XX; ensure on PATH
+          if ! command -v ld.lld >/dev/null 2>&1; then
+            LATEST_LD=$(ls -1 /opt/homebrew/opt/llvm/bin/ld.lld* 2>/dev/null | sort | tail -1)
+            [ -n "$LATEST_LD" ] && ln -s "$LATEST_LD" /usr/local/bin/ld.lld || true
+          fi
+          command -v meson && meson --version
+          command -v ld.lld && ld.lld --version || echo "ld.lld not on PATH yet"
+
+      - name: Pin Xcode 16.4 (default on macos-15)
+        run: |
+          # Xcode 16.4 is what the runner already has; Xcode 27 is not
+          # publicly available on GitHub-hosted macos runners yet, so build
+          # against 16.4 which is the documented "minimum" (iOS 15.0 target).
+          xcodebuild -version
 
       - name: Bootstrap toolchain and pinned dependencies
         run: scripts/bootstrap-macos.sh
