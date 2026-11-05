@@ -160,7 +160,7 @@ struct DebianInstallerView: View {
             else { Button("安装 Debian ARM64") { installer.install(completion: completion) } }
             if let failure = installer.failure { Text(failure).foregroundColor(.red) }
             NavigationLink("导出安装器诊断", destination: DeveloperDiagnosticsView())
-            Text("请在诊断中选择"导出完整诊断包"。其中包含有界的 Debian 安装器日志。DEBUG 可启用逐条目的归档跟踪。").font(.footnote)
+            Text("请在诊断中选择\"导出完整诊断包\"。其中包含有界的 Debian 安装器日志。DEBUG 可启用逐条目的归档跟踪。").font(.footnote)
         }.navigationTitle("安装 Debian")
     }
 }

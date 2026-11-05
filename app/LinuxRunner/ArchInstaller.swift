@@ -311,7 +311,7 @@ struct ArchInstallerView: View {
     var body: some View {
         List {
             Text("Arch Linux ARM · aarch64 · 滚动发布")
-            Text("实验性。下载官方 Arch Linux ARM 包；每个包必须与 SHA-256 匹配并带有 Arch Linux ARM 构建系统密钥的有效签名。请使用"安装 Linux"配置账户并安装 X11 桌面组件。不支持 Wayland。需要 1.5 GB 可用空间。已有环境会被保留。").font(.footnote)
+            Text("实验性。下载官方 Arch Linux ARM 包；每个包必须与 SHA-256 匹配并带有 Arch Linux ARM 构建系统密钥的有效签名。请使用\"安装 Linux\"配置账户并安装 X11 桌面组件。不支持 Wayland。需要 1.5 GB 可用空间。已有环境会被保留。").font(.footnote)
             Text(installer.message)
             if installer.running { ProgressView(value: installer.fraction); Button("取消安装") { installer.cancel() } }
             else { Button("安装 Arch Linux ARM") { installer.install(completion: completion) } }
