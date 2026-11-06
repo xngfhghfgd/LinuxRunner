@@ -1,0 +1,48 @@
+# Create a GitHub Release with the prebuilt zh-Hans IPA as an asset.
+#
+# The local token (xngfhghfgd) cannot upload release assets via
+# uploads.github.com (returns "Bad Size" on every attempt), so this workflow
+# uses the repo's own GITHUB_TOKEN — which always has full write access to
+# release assets — to create the release and attach the IPA committed under
+# dist/ in the zh-Hans branch.
+
+name: Create Release with IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ zh-Hans ]
+    paths:
+      - 'dist/**'
+
+jobs:
+  publish-release:
+    name: Publish release with IPA asset
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          ref: zh-Hans
+
+      - name: Create / update release and upload IPA
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: v1.0.1-zh-Hans
+          name: "LinuxRunner 1.0.1 (zh-Hans) - 简体中文版"
+          prerelease: true
+          draft: false
+          body: |
+            简体中文翻译版 LinuxRunner 1.0.1 (zh-Hans)。
+
+            - 由 GitHub Actions 在 zh-Hans 分支编译 (build-ipa workflow, run #42063057579)
+            - ad-hoc 签名,需配合 Sideloadly / AltStore 侧载安装
+            - 源码与翻译: 分支 zh-Hans
+
+            ## 下载
+            点击下方的 asset 即可直接下载编译好的 IPA。
+          files: |
+            dist/LinuxRunner-zh-Hans.ipa
+          fail_on_unmatched_files: true
