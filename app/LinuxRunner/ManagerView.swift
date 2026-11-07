@@ -183,17 +183,17 @@ private struct SetPasswordSheet: View {
     var body: some View {
         NavigationView {
             Form {
-                SecureField("New password", text: $password).textContentType(.newPassword)
-                SecureField("Confirm password", text: $confirmation).textContentType(.newPassword)
+                SecureField("新密码", text: $password).textContentType(.newPassword)
+                SecureField("确认密码", text: $confirmation).textContentType(.newPassword)
                 if !confirmation.isEmpty && password != confirmation { Text("The passwords do not match.").foregroundStyle(.orange) }
                 if let working { HStack(spacing: 10) { ProgressView(); Text(working) } }
                 if let problem { Text(problem).foregroundStyle(.red) }
             }
-            .navigationTitle("Password for \(name)")
+            .navigationTitle("\(name) 的密码")
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() }.disabled(working != nil) }
+                ToolbarItem(placement: .cancellationAction) { Button("取消") { dismiss() }.disabled(working != nil) }
                 ToolbarItem(placement: .confirmationAction) { Button("Save") {
-                    working = "Preparing"; problem = nil
+                    working = "准备中"; problem = nil
                     LRRuntimeBridge.setLinuxPassword(name, password: password, progress: { working = $0 }) { error in
                         working = nil
                         if let error { problem = error.localizedDescription } else { dismiss() }
@@ -220,7 +220,7 @@ private struct LinuxUsersView: View {
     @State private var passwordFor: PasswordTarget?
     private var running: Bool { LRRuntimeBridge.isRunning() }
     private func createNative() {
-        error = nil; creating = "Preparing"
+        error = nil; creating = "准备中"
         LRRuntimeBridge.createLinuxUser(username, password: newPassword, administrator: newAdministrator, progress: { creating = $0 }) { failure in
             creating = nil
             if let failure { error = failure.localizedDescription; return }
@@ -230,74 +230,74 @@ private struct LinuxUsersView: View {
 
     var body: some View {
         List {
-            Section("Active Linux Environment") {
+            Section("当前 Linux 环境") {
                 Text(LRRuntimeBridge.activeRootName()).font(.caption).foregroundColor(.secondary)
-                Text("New ordinary terminals log in as the selected user using the distribution's su. Existing terminals, managed desktops and administrative/package launches retain their identity.").font(.footnote)
-                Text("Linux UID permissions apply inside LinuxRunner. Accounts do not create separate iOS security identities.").font(.footnote).foregroundColor(.secondary)
+                Text("新的普通终端会以所选用户通过发行版的 su 登录。已有终端、托管桌面与管理员/包启动保留其身份。").font(.footnote)
+                Text("Linux UID 权限在 LinuxRunner 内部生效。账户不会创建独立的 iOS 安全身份。").font(.footnote).foregroundColor(.secondary)
             }
-            Section("Default Linux Session User") {
-                Picker("Login account", selection: $selected) {
+            Section("默认 Linux 会话用户") {
+                Picker("登录账户", selection: $selected) {
                     ForEach(accounts, id: \.self) { account in
                         Text("\(account["name"] ?? "") · UID \(account["uid"] ?? "")").tag(account["name"] ?? "")
                     }
                     if !accounts.contains(where: { $0["name"] == selected }) {
-                        Text(selected + " (not available)").tag(selected)
+                        Text(selected + "（不可用）").tag(selected)
                     }
                 }
-                Button("Use for New Sessions") {
+                Button("用于新会话") {
                     do { _ = try LRRuntimeBridge.setDefaultLinuxUser(selected) }
                     catch { self.error = error.localizedDescription }
                 }.disabled(!running || !accounts.contains(where: { $0["name"] == selected }))
-                Button("Open Login Terminal") {
+                Button("打开登录终端") {
                     do { session = TerminalPresentation(controller: try LRRuntimeBridge.terminal(forLinuxUser: selected)) }
                     catch { self.error = error.localizedDescription }
                 }.disabled(!running || !accounts.contains(where: { $0["name"] == selected }))
             }
-            Section("Create Linux User") {
-                TextField("Username", text: $username).autocorrectionDisabled().textInputAutocapitalization(.never).textContentType(.username)
-                SecureField("Password", text: $newPassword).textContentType(.newPassword)
-                SecureField("Confirm password", text: $newConfirmation).textContentType(.newPassword)
-                Toggle("Administrator (can use sudo)", isOn: $newAdministrator)
-                Button("Create Account") { createNative() }
+            Section("创建 Linux 用户") {
+                TextField("用户名", text: $username).autocorrectionDisabled().textInputAutocapitalization(.never).textContentType(.username)
+                SecureField("密码", text: $newPassword).textContentType(.newPassword)
+                SecureField("确认密码", text: $newConfirmation).textContentType(.newPassword)
+                Toggle("管理员（可使用 sudo）", isOn: $newAdministrator)
+                Button("创建账户") { createNative() }
                     .disabled(!running || creating != nil || username.isEmpty || newPassword.isEmpty || newPassword != newConfirmation)
                 if let creating { HStack(spacing: 10) { ProgressView(); Text(creating) } }
-                Text("Account tools (and sudo for administrators) are installed automatically if this environment lacks them. LinuxRunner sends only Linux's own password hash and stores no password.").font(.caption).foregroundColor(.secondary)
+                Text("账户工具（管理员的 sudo）若该环境缺乏会自动安装。LinuxRunner 只发送 Linux 自身的密码哈希，不存储密码。").font(.caption).foregroundColor(.secondary)
             }
-            Section("Manage Accounts") {
+            Section("管理账户") {
                 ForEach(accounts, id: \.self) { account in
                     VStack(alignment: .leading, spacing: 6) {
                         Text(account["name"] ?? "").font(.headline)
                         Text("UID \(account["uid"] ?? "") · GID \(account["gid"] ?? "") · \(account["home"] ?? "")").font(.caption)
-                        Button("Set Password…") { passwordFor = PasswordTarget(name: account["name"] ?? "") }.disabled(!running)
+                        Button("设置密码…") { passwordFor = PasswordTarget(name: account["name"] ?? "") }.disabled(!running)
                         if (Int(account["uid"] ?? "") ?? 0) >= 1000 {
-                            Button("Remove Account — Keep Home…", role: .destructive) {
+                            Button("删除账户 — 保留主目录…", role: .destructive) {
                                 removeName = account["name"] ?? ""
                                 confirmRemove = true
                             }.disabled(!running || account["name"] == LRRuntimeBridge.defaultLinuxUser())
                         }
                     }
                 }
-                Button("Refresh Accounts", action: refresh).disabled(!running)
-                Text("System users without a login shell are omitted. Removing an account preserves its home and files; their numeric ownership remains. System accounts and the default login are protected.").font(.caption).foregroundColor(.secondary)
+                Button("刷新账户", action: refresh).disabled(!running)
+                Text("没有登录 shell 的系统用户被省略。删除账户会保留其主目录与文件，数字属主不变。系统账户与默认登录受保护。").font(.caption).foregroundColor(.secondary)
             }
-            if let error { Section("Account Operation") { Text(error).foregroundColor(.red) } }
+            if let error { Section("账户操作") { Text(error).foregroundColor(.red) } }
         }
-        .navigationTitle("Linux Users")
+        .navigationTitle("Linux 用户")
         .onAppear(perform: refresh)
         .sheet(item: $passwordFor) { target in SetPasswordSheet(name: target.name) }
-        .confirmationDialog("Create \(username) in the active Linux environment?", isPresented: $confirmCreate, titleVisibility: .visible) {
-            Button("Create User") {
+        .confirmationDialog("在当前 Linux 环境中创建 \(username)？", isPresented: $confirmCreate, titleVisibility: .visible) {
+            Button("创建用户") {
                 do { session = TerminalPresentation(controller: try LRRuntimeBridge.createLinuxUser(username)) }
                 catch { self.error = error.localizedDescription }
             }
         }
-        .confirmationDialog("Remove \(removeName) and keep its home?", isPresented: $confirmRemove, titleVisibility: .visible) {
-            Button("Remove Account — Keep Home", role: .destructive) {
+        .confirmationDialog("删除 \(removeName) 并保留其主目录？", isPresented: $confirmRemove, titleVisibility: .visible) {
+            Button("删除账户 — 保留主目录", role: .destructive) {
                 do { session = TerminalPresentation(controller: try LRRuntimeBridge.removeLinuxUserKeepingHome(removeName)) }
                 catch { self.error = error.localizedDescription }
             }
         } message: {
-            Text("The distribution updates its account databases. Home directories and files remain, with their existing numeric ownership. Close this user's sessions first. No forced deletion is used.")
+            Text("发行版会更新其账户数据库。主目录与文件保留，维持现有数字属主。请先关闭该用户的会话。不会使用强制删除。")
         }
         .sheet(item: $session, onDismiss: refresh) { item in
             TerminalScreen(controller: item.controller)
@@ -349,13 +349,13 @@ struct ManagerView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             NavigationView { home }.navigationViewStyle(.stack)
-                .tabItem { Label("Home", systemImage: "house") }.tag(0)
+                .tabItem { Label("主页", systemImage: "house") }.tag(0)
             NavigationView { distributions }.navigationViewStyle(.stack)
-                .tabItem { Label("Distributions", systemImage: "square.stack.3d.up") }.tag(1)
+                .tabItem { Label("发行版", systemImage: "square.stack.3d.up") }.tag(1)
             NavigationView { sessions }.navigationViewStyle(.stack)
-                .tabItem { Label("Sessions", systemImage: "rectangle.on.rectangle") }.tag(2)
+                .tabItem { Label("会话", systemImage: "rectangle.on.rectangle") }.tag(2)
             NavigationView { preferences }.navigationViewStyle(.stack)
-                .tabItem { Label("Settings", systemImage: "slider.horizontal.3") }.tag(3)
+                .tabItem { Label("设置", systemImage: "slider.horizontal.3") }.tag(3)
         }
         .overlay(alignment: .bottom) { InstallProgressCard() }
         .accentColor(Color(red: 0.36, green: 0.68, blue: 0.98))
@@ -379,10 +379,10 @@ struct ManagerView: View {
             SetupWizardView(manager: manager, openDesktop: { desktopAfterSetup = true })
         }
         .onReceive(sessionTimer) { _ in if phase == .active { desktopSummary = LRRuntimeBridge.desktopSessionSummary() } }
-        .alert("Stop Desktop?", isPresented: $confirmStopDesktop) {
-            Button("Cancel", role: .cancel) { }
-            Button("Stop", role: .destructive) { LRRuntimeBridge.stopDesktopSession(); desktopSummary = LRRuntimeBridge.desktopSessionSummary() }
-        } message: { Text("Save documents first. This closes applications owned by the desktop; persistent files and the terminal environment remain.") }
+        .alert("停止桌面？", isPresented: $confirmStopDesktop) {
+            Button("取消", role: .cancel) { }
+            Button("停止", role: .destructive) { LRRuntimeBridge.stopDesktopSession(); desktopSummary = LRRuntimeBridge.desktopSessionSummary() }
+        } message: { Text("请先保存文档。这会关闭该桌面的应用；持久文件与终端环境保留。") }
         .fullScreenCover(item: $graphical) { request in NativeController(controller: presentedController(request)) }
         .sheet(isPresented: $diagnostics) { DeveloperDiagnosticsView() }
         .fullScreenCover(item: $session) { item in
@@ -452,7 +452,7 @@ struct ManagerView: View {
             Section {
                 VStack(alignment: .leading, spacing: 10) {
                     Text("LinuxRunner").font(.system(size: 34, weight: .bold, design: .rounded)).tracking(-1)
-                    Text("Your Linux workspace, on iPhone.").font(.subheadline).foregroundColor(.secondary)
+                    Text("你的 Linux 工作区，就在 iPhone 上。").font(.subheadline).foregroundColor(.secondary)
                     HStack(spacing: 7) {
                         Circle().fill(LRRuntimeBridge.isRunning() ? Color.green : Color.orange).frame(width: 6, height: 6)
                         Text(activeEnvironment?.name ?? LRRuntimeBridge.runtimeStatus()).font(.caption)
@@ -461,125 +461,125 @@ struct ManagerView: View {
                     }.padding(.top, 8)
                     if !LRRuntimeBridge.isRunning() {
                         Button(action: startRuntime) {
-                            HStack { if startingRuntime { ProgressView().tint(.white) } else { Image(systemName: "power") }; Text(startingRuntime ? "Starting Runtime…" : "Start Linux Runtime").fontWeight(.semibold); Spacer(); Image(systemName: "arrow.right") }
+                            HStack { if startingRuntime { ProgressView().tint(.white) } else { Image(systemName: "power") }; Text(startingRuntime ? "正在启动运行时…" : "启动 Linux 运行时").fontWeight(.semibold); Spacer(); Image(systemName: "arrow.right") }
                                 .padding(16).foregroundColor(.white).background(Color(red: 0.12, green: 0.30, blue: 0.52)).cornerRadius(12)
-                        }.buttonStyle(.plain).disabled(startingRuntime || !LRRuntimeBridge.canStartRuntime()).accessibilityIdentifier("Start Linux Runtime")
+                        }.buttonStyle(.plain).disabled(startingRuntime || !LRRuntimeBridge.canStartRuntime()).accessibilityIdentifier("启动 Linux 运行时")
                     } else { Button(action: openDesktop) {
-                        HStack { Image(systemName: "desktopcomputer"); Text(desktopAlive ? "Resume Desktop" : "Open Desktop").fontWeight(.semibold); Spacer(); Image(systemName: "arrow.up.right") }
+                        HStack { Image(systemName: "desktopcomputer"); Text(desktopAlive ? "恢复桌面" : "打开桌面").fontWeight(.semibold); Spacer(); Image(systemName: "arrow.up.right") }
                             .padding(16).foregroundColor(.white).background(Color(red: 0.12, green: 0.30, blue: 0.52)).cornerRadius(12)
-                    }.buttonStyle(.plain).accessibilityIdentifier("Open Desktop") }
+                    }.buttonStyle(.plain).accessibilityIdentifier("打开桌面") }
                 }.padding(.vertical, 12)
             }
             if LRRuntimeBridge.isRunning() {
-                Section("Status") {
-                    statusRow("Runtime", systemImage: "cpu", value: activeEnvironment?.name ?? "Running", color: .green)
-                    statusRow("Desktop", systemImage: "desktopcomputer", value: desktopSummary["state"] as? String ?? "Stopped", color: desktopAlive ? .green : .secondary)
-                    NavigationLink(destination: GraphicsSettingsView()) { statusRow("Graphics", systemImage: "square.3.layers.3d", value: graphicsStatus, color: graphicsMode == "mesa" ? .secondary : .blue) }
+                Section("状态") {
+                    statusRow("运行时", systemImage: "cpu", value: activeEnvironment?.name ?? "Running", color: .green)
+                    statusRow("桌面", systemImage: "desktopcomputer", value: desktopSummary["state"] as? String ?? "已停止", color: desktopAlive ? .green : .secondary)
+                    NavigationLink(destination: GraphicsSettingsView()) { statusRow("图形", systemImage: "square.3.layers.3d", value: graphicsStatus, color: graphicsMode == "mesa" ? .secondary : .blue) }
                 }
             }
-            Section("Workspace") {
-                NavigationLink(destination: ApplicationGridView(manager: manager, run: run)) { Label("Applications", systemImage: "square.grid.2x2") }
+            Section("工作区") {
+                NavigationLink(destination: ApplicationGridView(manager: manager, run: run)) { Label("应用程序", systemImage: "square.grid.2x2") }
                 if let environment = activeEnvironment {
-                    NavigationLink(destination: PackageView(environment: environment, enabled: manager.active(environment), run: run, refreshApplications: manager.refresh)) { Label("App Manager", systemImage: "bag") }
-                    Button { openTerminal(environment) } label: { Label("Terminal", systemImage: "terminal") }
-                    NavigationLink(destination: files(environment)) { Label("Files", systemImage: "folder") }
+                    NavigationLink(destination: PackageView(environment: environment, enabled: manager.active(environment), run: run, refreshApplications: manager.refresh)) { Label("应用管理器", systemImage: "bag") }
+                    Button { openTerminal(environment) } label: { Label("终端", systemImage: "terminal") }
+                    NavigationLink(destination: files(environment)) { Label("文件", systemImage: "folder") }
                 }
             }
-            Section("Recent Application Crashes") {
-                NavigationLink(destination: GuestCrashListView()) { Label("View Crash Reports", systemImage: "exclamationmark.bubble") }
+            Section("近期应用崩溃") {
+                NavigationLink(destination: GuestCrashListView()) { Label("查看崩溃报告", systemImage: "exclamationmark.bubble") }
             }
             if !recentApplications.isEmpty {
-                Section("Recently Used") { ForEach(recentApplications) { app in Button { run(app) } label: {
+                Section("最近使用") { ForEach(recentApplications) { app in Button { run(app) } label: {
                     HStack { if let image = manager.applicationIcons[app.launchKey] { Image(uiImage: image).resizable().scaledToFit().frame(width: 28, height: 28) } else { Image(systemName: "app").frame(width: 28) }; Text(app.name); Spacer(); Image(systemName: "arrow.up.right").font(.caption).foregroundColor(.secondary) }
                 } } }
             }
-            Section("Installed Distributions") { ForEach(manager.environments) { environment in
-                HStack { Image(systemName: "shippingbox").foregroundColor(.accentColor); VStack(alignment: .leading, spacing: 4) { Text(environment.name); Text(manager.size(environment)).font(.caption).foregroundColor(.secondary) }; Spacer(); Text(manager.active(environment) ? "Running" : "Installed").font(.caption).foregroundColor(.secondary) }
+            Section("已安装发行版") { ForEach(manager.environments) { environment in
+                HStack { Image(systemName: "shippingbox").foregroundColor(.accentColor); VStack(alignment: .leading, spacing: 4) { Text(environment.name); Text(manager.size(environment)).font(.caption).foregroundColor(.secondary) }; Spacer(); Text(manager.active(environment) ? "运行中" : "已安装").font(.caption).foregroundColor(.secondary) }
             } }
             if !LRRuntimeBridge.isRunning() { Section { Text(LRRuntimeBridge.runtimeStatus()).foregroundColor(.orange) } }
-        }.listStyle(.insetGrouped).navigationTitle("Home").navigationBarTitleDisplayMode(.inline)
-            .toolbar { Button { manager.refresh() } label: { Image(systemName: "arrow.clockwise") }.accessibilityLabel("Refresh") }
+        }.listStyle(.insetGrouped).navigationTitle("主页").navigationBarTitleDisplayMode(.inline)
+            .toolbar { Button { manager.refresh() } label: { Image(systemName: "arrow.clockwise") }.accessibilityLabel("刷新") }
     }
     private var distributions: some View {
         List {
-            Section("Installed") { ForEach(manager.environments) { environment in
+            Section("已安装") { ForEach(manager.environments) { environment in
                 NavigationLink(destination: environmentDetail(environment)) {
                     HStack(spacing: 14) { Image(systemName: "shippingbox.fill").font(.title2).foregroundColor(.accentColor)
                         VStack(alignment: .leading, spacing: 5) { Text(environment.name).font(.headline); Text("ARM64 · " + manager.size(environment)).font(.caption).foregroundColor(.secondary)
-                            if LRRuntimeBridge.nextRootName() == environment.rootfsName && !manager.active(environment) { Text("Selected for next launch").font(.caption).foregroundColor(.accentColor) }
+                            if LRRuntimeBridge.nextRootName() == environment.rootfsName && !manager.active(environment) { Text("已选定为下次启动").font(.caption).foregroundColor(.accentColor) }
                         }; Spacer(); if manager.active(environment) { Image(systemName: "circle.fill").font(.system(size: 7)).foregroundColor(.green) }
                     }.padding(.vertical, 6)
                 }
             } }
-            Section("Add Environment") {
-                Button { setupStep = "welcome"; setup = true } label: { Label("Set Up Linux…", systemImage: "sparkles") }
-                if manager.busy { ProgressView("Preparing environment…") }
+            Section("添加环境") {
+                Button { setupStep = "welcome"; setup = true } label: { Label("安装 Linux…", systemImage: "sparkles") }
+                if manager.busy { ProgressView("正在准备环境…") }
             }
-            Section { Text("Each distribution retains its own packages and files. One runtime is active at a time; switching takes effect after relaunch.").font(.footnote).foregroundColor(.secondary) }
-        }.listStyle(.insetGrouped).navigationTitle("Distributions")
-            .toolbar { Button { manager.refresh() } label: { Image(systemName: "arrow.clockwise") }.accessibilityLabel("Refresh Distributions") }
+            Section { Text("每个发行版保留自己的包与文件。同一时间只有一个运行时激活；切换在重启后生效。").font(.footnote).foregroundColor(.secondary) }
+        }.listStyle(.insetGrouped).navigationTitle("发行版")
+            .toolbar { Button { manager.refresh() } label: { Image(systemName: "arrow.clockwise") }.accessibilityLabel("刷新发行版") }
     }
     private var sessions: some View {
         List {
-            Section("Desktop") {
-                Label(desktopSummary["state"] as? String ?? "Stopped", systemImage: "desktopcomputer").font(.headline)
+            Section("桌面") {
+                Label(desktopSummary["state"] as? String ?? "已停止", systemImage: "desktopcomputer").font(.headline)
                 if desktopAlive {
-                    Text("Profile: " + (activeEnvironment?.name ?? LRRuntimeBridge.activeRootName())).font(.subheadline)
+                    Text("配置：" + (activeEnvironment?.name ?? LRRuntimeBridge.activeRootName())).font(.subheadline)
                     if let user = desktopSummary["user"] as? String {
-                        Text("Desktop user: " + user).font(.subheadline)
-                        if user != LRRuntimeBridge.defaultLinuxUser() { Text("The selected login changed. Save work and stop this desktop before launching applications under the new user.").font(.footnote).foregroundColor(.orange) }
-                        if user == "root" { Text("This session runs as root. Applications that require a normal user will refuse to start. Choose a Linux user in Settings, then start a new desktop.").font(.footnote).foregroundColor(.orange) }
+                        Text("桌面用户：" + user).font(.subheadline)
+                        if user != LRRuntimeBridge.defaultLinuxUser() { Text("所选登录账户已变更。请在以新用户启动应用前保存工作并停止该桌面。").font(.footnote).foregroundColor(.orange) }
+                        if user == "root" { Text("该会话以 root 运行。需要普通用户的应用会拒绝启动。请在设置中选择 Linux 用户，然后启动新桌面。").font(.footnote).foregroundColor(.orange) }
                     }
-                    if let geometry = desktopSummary["geometry"] as? String { Text("Display: " + geometry).font(.caption).foregroundColor(.secondary) }
-                    Text(desktopSummary["connected"] as? Bool == true ? "Viewer connected" : "Viewer detached; desktop retained").font(.caption).foregroundColor(.secondary)
-                    Button("Resume Desktop", action: openDesktop)
-                    Button("Stop Desktop", role: .destructive) { confirmStopDesktop = true }
-                } else { Button("Open Desktop", action: openDesktop).disabled(!LRRuntimeBridge.isRunning()) }
-                Text("Navigating away retains windows. iOS may suspend or terminate the app; saved files remain persistent.").font(.footnote).foregroundColor(.secondary)
+                    if let geometry = desktopSummary["geometry"] as? String { Text("显示：" + geometry).font(.caption).foregroundColor(.secondary) }
+                    Text(desktopSummary["connected"] as? Bool == true ? "查看器已连接" : "查看器已断开；桌面保留").font(.caption).foregroundColor(.secondary)
+                    Button("恢复桌面", action: openDesktop)
+                    Button("停止桌面", role: .destructive) { confirmStopDesktop = true }
+                } else { Button("打开桌面", action: openDesktop).disabled(!LRRuntimeBridge.isRunning()) }
+                Text("切换界面会保留窗口。iOS 可能挂起或终止应用；已保存文件保持持久。").font(.footnote).foregroundColor(.secondary)
             }
-            Section("Runtime") { Text(LRRuntimeBridge.runtimeStatus()); if let environment = activeEnvironment { Button("Open Terminal") { openTerminal(environment) } } }
-            if developerMode { Section("Inspection") { Button("Runtime Diagnostics") { diagnostics = true }; Button("Standalone GUI Test", action: openGUITest) } }
-        }.listStyle(.insetGrouped).navigationTitle("Sessions")
+            Section("运行时") { Text(LRRuntimeBridge.runtimeStatus()); if let environment = activeEnvironment { Button("打开终端") { openTerminal(environment) } } }
+            if developerMode { Section("检查") { Button("运行时诊断") { diagnostics = true }; Button("独立 GUI 测试", action: openGUITest) } }
+        }.listStyle(.insetGrouped).navigationTitle("会话")
     }
     private var preferences: some View {
         List {
-            Section("Appearance") { Picker(selection: $appearance) { Text("Dark").tag("dark"); Text("Light").tag("light"); Text("System").tag("system") } label: { Label("Native Theme", systemImage: "circle.lefthalf.filled") } }
+            Section("外观") { Picker(selection: $appearance) { Text("深色").tag("dark"); Text("浅色").tag("light"); Text("跟随系统").tag("system") } label: { Label("原生主题", systemImage: "circle.lefthalf.filled") } }
             Section {
-                Toggle(isOn: $keepScreenAwake) { Label("Keep Screen Awake During Operations", systemImage: "sun.max") }
-            } header: { Text("General") } footer: {
-                Text("Prevents automatic screen locking while LinuxRunner installs Linux, desktop components, account tools or packages, and while a terminal command runs. iOS pauses apps in the background, so keep LinuxRunner open in the foreground during long operations.")
+                Toggle(isOn: $keepScreenAwake) { Label("操作期间保持屏幕常亮", systemImage: "sun.max") }
+            } header: { Text("通用") } footer: {
+                Text("在 LinuxRunner 安装 Linux、桌面组件、账户工具或包，以及终端命令运行期间，防止自动锁屏。iOS 会在后台暂停应用，因此长操作期间请让 LinuxRunner 保持在前台。")
             }
-            Section("Desktop & Input") {
-                NavigationLink(destination: GraphicsSettingsView()) { Label("Graphics", systemImage: "cpu") }
-                NavigationLink(destination: DesktopEnvironmentView()) { Label("Desktop Environment", systemImage: "macwindow.on.rectangle") }
-                NavigationLink(destination: AudioSettingsView()) { Label("Audio", systemImage: "speaker.wave.2") }
-                NavigationLink(destination: DesktopPreferencesView()) { Label("Display and Gestures", systemImage: "hand.tap") }
-                NavigationLink(destination: ApplicationGridView(manager: manager, run: run)) { Label("Application Launcher", systemImage: "square.grid.2x2") }
+            Section("桌面与输入") {
+                NavigationLink(destination: GraphicsSettingsView()) { Label("图形", systemImage: "cpu") }
+                NavigationLink(destination: DesktopEnvironmentView()) { Label("桌面环境", systemImage: "macwindow.on.rectangle") }
+                NavigationLink(destination: AudioSettingsView()) { Label("音频", systemImage: "speaker.wave.2") }
+                NavigationLink(destination: DesktopPreferencesView()) { Label("显示与手势", systemImage: "hand.tap") }
+                NavigationLink(destination: ApplicationGridView(manager: manager, run: run)) { Label("应用启动器", systemImage: "square.grid.2x2") }
             }
-            Section("Files & Devices") {
-                NavigationLink(destination: SharedFoldersView()) { Label("Shared iPhone Folders", systemImage: "folder") }
-                NavigationLink(destination: DevicesView()) { Label("Devices", systemImage: "cable.connector") }
+            Section("文件与设备") {
+                NavigationLink(destination: SharedFoldersView()) { Label("共享 iPhone 文件夹", systemImage: "folder") }
+                NavigationLink(destination: DevicesView()) { Label("设备", systemImage: "cable.connector") }
             }
-            Section("Environment") {
-                NavigationLink(destination: LinuxUsersView()) { Label("Linux Users", systemImage: "person.2") }
-                NavigationLink(destination: StorageManagementView(environments: manager.environments)) { Label("Storage Management", systemImage: "internaldrive") }
-                Button { importRoot = activeEnvironment?.rootfsName; importer = importRoot != nil } label: { Label("Import File", systemImage: "square.and.arrow.down") }.disabled(activeEnvironment == nil)
+            Section("环境") {
+                NavigationLink(destination: LinuxUsersView()) { Label("Linux 用户", systemImage: "person.2") }
+                NavigationLink(destination: StorageManagementView(environments: manager.environments)) { Label("存储管理", systemImage: "internaldrive") }
+                Button { importRoot = activeEnvironment?.rootfsName; importer = importRoot != nil } label: { Label("导入文件", systemImage: "square.and.arrow.down") }.disabled(activeEnvironment == nil)
             }
-            Section("Advanced") {
-                NavigationLink(destination: TerminalSettingsView()) { Label("Terminal & Keyboard", systemImage: "keyboard") }
-                Button { LRRuntimeBridge.exportDesktopReport { url in if let url { share = ExportItem(url: url) } } } label: { Label("Export Open Desktop Report", systemImage: "doc.text.magnifyingglass") }
-                Toggle(isOn: $developerMode) { Label("Developer Mode", systemImage: "hammer") }
+            Section("高级") {
+                NavigationLink(destination: TerminalSettingsView()) { Label("终端与键盘", systemImage: "keyboard") }
+                Button { LRRuntimeBridge.exportDesktopReport { url in if let url { share = ExportItem(url: url) } } } label: { Label("导出桌面报告", systemImage: "doc.text.magnifyingglass") }
+                Toggle(isOn: $developerMode) { Label("开发者模式", systemImage: "hammer") }
                 if developerMode {
-                    Toggle(isOn: $autoStartRuntime) { Label("Start Runtime on Launch", systemImage: "power") }.onChange(of: autoStartRuntime) { UserDefaults.standard.set($0, forKey: "LinuxRunnerRuntimeAutoStart") }
+                    Toggle(isOn: $autoStartRuntime) { Label("启动时自动启动运行时", systemImage: "power") }.onChange(of: autoStartRuntime) { UserDefaults.standard.set($0, forKey: "LinuxRunnerRuntimeAutoStart") }
                     Button(action: openGUITest) { Label("Standalone GUI Test", systemImage: "rectangle.dashed") }.disabled(!LRRuntimeBridge.isRunning())
                     Button { diagnostics = true } label: { Label("Runtime Diagnostics", systemImage: "stethoscope") }
-                    NavigationLink(destination: ExecutionEngineView()) { Label("Execution Engine / StikDebug", systemImage: "bolt") }
-                    Toggle(isOn: $memoryPCFusion) { Label("Memory Dispatch Fusion", systemImage: "memorychip") }
-                    Text("On by default from build 884. Applies after fully closing and reopening LinuxRunner. Uses the same Asbestos engine with fewer dispatch steps per memory access (Mac: Python and Node startup 4-5% faster, ABI suites and browser tests pass). Turn off to restore the previous memory dispatch path if an app misbehaves.").font(.caption)
+                    NavigationLink(destination: ExecutionEngineView()) { Label("执行引擎 / StikDebug", systemImage: "bolt") }
+                    Toggle(isOn: $memoryPCFusion) { Label("内存分派融合", systemImage: "memorychip") }
+                    Text("自 build 884 起默认开启。需在完全关闭并重新打开 LinuxRunner 后生效。使用相同的 Asbestos 引擎，每次内存访问减少分派步骤（Mac：Python 与 Node 启动快 4–5%，ABI 套件与浏览器测试通过）。若应用行为异常，关闭此项可恢复原有内存分派路径。").font(.caption)
                 }
             }
-            Section("About") { NavigationLink(destination: LinuxRunnerAboutView()) { Label("About LinuxRunner", systemImage: "info.circle") } }
-        }.listStyle(.insetGrouped).navigationTitle("Settings")
+            Section("关于") { NavigationLink(destination: LinuxRunnerAboutView()) { Label("关于 LinuxRunner", systemImage: "info.circle") } }
+        }.listStyle(.insetGrouped).navigationTitle("设置")
     }
     private func openTerminal(_ environment: LinuxEnvironment) {
         guard manager.active(environment) else { return }
@@ -603,60 +603,60 @@ struct ManagerView: View {
     }
     private func environmentDetail(_ environment: LinuxEnvironment) -> some View {
         List {
-            Section("Environment") {
+            Section("环境") {
                 Text("\(environment.distribution) \(environment.rootfsVersion) · ARM64")
                 Text(manager.size(environment))
-                Text("Home: \(environment.homePath)")
-                if let state = environment.installationState { Text("Installation: \(state)") }
-                if let result = environment.lastBootResult { Text("Boot result: \(result)") }
-                if let gui = environment.guiAvailability { Text("GUI: \(gui)") }
-                if let desktop = environment.desktopAvailability { Text("Desktop: \(desktop)") }
-                Text("Created: \(environment.createdAt.formatted())")
-                if let last = environment.lastBootedAt { Text("Last boot: \(last.formatted())") }
-                Button("Open Terminal") { openTerminal(environment) }.disabled(!manager.active(environment))
-                Button("Set Up Linux…") {
+                Text("主目录：\(environment.homePath)")
+                if let state = environment.installationState { Text("安装状态：\(state)") }
+                if let result = environment.lastBootResult { Text("启动结果：\(result)") }
+                if let gui = environment.guiAvailability { Text("GUI：\(gui)") }
+                if let desktop = environment.desktopAvailability { Text("桌面：\(desktop)") }
+                Text("创建时间：\(environment.createdAt.formatted())")
+                if let last = environment.lastBootedAt { Text("上次启动：\(last.formatted())") }
+                Button("打开终端") { openTerminal(environment) }.disabled(!manager.active(environment))
+                Button("安装 Linux…") {
                     UserDefaults.standard.set(environment.distributionID ?? "alpine", forKey: "LinuxRunnerSetup.distribution")
                     UserDefaults.standard.set(environment.rootfsName, forKey: "LinuxRunnerSetup.root")
                     LRRuntimeBridge.setNextRootName(environment.rootfsName)
                     setupStep = manager.active(environment) ? "account" : "relaunch"
                     setup = true
                 }
-                NavigationLink("Application Launcher", destination: ApplicationGridView(manager: manager, run: run))
-                Text("Start GUI support here before running X11 apps. DISPLAY is supplied by the managed session, not a global terminal variable.").font(.caption)
+                NavigationLink("应用启动器", destination: ApplicationGridView(manager: manager, run: run))
+                Text("运行 X11 应用前请先在此启动 GUI 支持。DISPLAY 由托管会话提供，而不是全局终端变量。").font(.caption)
                 if !manager.active(environment) {
-                    Button("Use on Next Launch") {
+                    Button("下次启动时使用") {
                         LRRuntimeBridge.setNextRootName(environment.rootfsName)
-                        manager.error = "Environment selected. Close LinuxRunner from the app switcher and open it again. Files are preserved."
+                        manager.error = "已选定环境。请从应用切换器中关闭 LinuxRunner 并重新打开。文件会保留。"
                     }
                 }
-                NavigationLink("Files", destination: files(environment))
+                NavigationLink("文件", destination: files(environment))
             }
-            Section("Applications") {
+            Section("应用") {
                 ForEach(manager.environments.first(where: { $0.id == environment.id })?.applications ?? []) { app in
                     VStack(alignment: .leading) {
                         Text(app.name).font(.headline)
                         Text(([app.command] + app.arguments).joined(separator: " ")).font(.caption).textSelection(.enabled)
-                        Button("Run") { run(app) }.disabled(!manager.active(environment)).accessibilityIdentifier("run-\(app.name)")
+                        Button("运行") { run(app) }.disabled(!manager.active(environment)).accessibilityIdentifier("run-\(app.name)")
                     }
                 }
-                NavigationLink("Create Launcher", destination: LauncherEditor { manager.add(application: $0, to: environment) })
+                NavigationLink("创建启动器", destination: LauncherEditor { manager.add(application: $0, to: environment) })
             }
             if manager.active(environment) && !manager.detected.isEmpty {
-                Section("Discovered Applications") {
+                Section("已发现的应用") {
                     ForEach(manager.detected) { app in
                         Button(app.name) { run(app) }
                     }
                 }
             }
             if manager.active(environment) && !manager.graphical.isEmpty {
-                Section("Installed graphical applications") {
-                    Text("Discovered from this environment's desktop entries. Listed applications have not all been compatibility-tested.").font(.caption)
+                Section("已安装的图形应用") {
+                    Text("发现自该环境的桌面项。所列应用并非全部都经过兼容性测试。").font(.caption)
                     ForEach(manager.graphical) { app in Button { run(app) } label: { VStack(alignment: .leading) { Text(app.name); if let comment = app.comment, !comment.isEmpty { Text(comment).font(.caption) } } } }
-                    Button("Refresh Applications") { manager.refresh() }
+                    Button("刷新应用") { manager.refresh() }
                 }
             }
-            Section("App Manager") {
-                NavigationLink("Install, Manage and Repair Applications", destination: PackageView(environment: environment, enabled: manager.active(environment), run: run, refreshApplications: manager.refresh))
+            Section("应用管理器") {
+                NavigationLink("安装、管理与修复应用", destination: PackageView(environment: environment, enabled: manager.active(environment), run: run, refreshApplications: manager.refresh))
             }
         }.navigationTitle(environment.name)
     }
@@ -695,9 +695,9 @@ struct TerminalScreen: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("Terminal").font(.headline)
+                Text("终端").font(.headline)
                 Spacer()
-                Button("Done") { dismiss() }
+                Button("完成") { dismiss() }
             }.padding(.horizontal).padding(.vertical, 8)
             NativeController(controller: controller)
         }.onAppear { currentTerminalViewController = controller }
@@ -719,7 +719,7 @@ struct CreateEnvironmentView: View {
                 TextField("Environment name", text: $name)
                 Text("Alpine 3.24.2 ARM64 from the verified bundled image. Debian and Ubuntu support is planned.")
                 Button("Create Environment") { create(name.trimmingCharacters(in: .whitespacesAndNewlines)); dismiss() }
-            }.navigationTitle("New Environment").toolbar { Button("Cancel") { dismiss() } }
+            }.navigationTitle("新环境").toolbar { Button("Cancel") { dismiss() } }
         }.navigationViewStyle(.stack)
     }
 }
@@ -749,9 +749,9 @@ struct LauncherEditor: View {
             if displayMode == .application {
                 TextField("Environment as JSON object", text: $environment).autocorrectionDisabled().textInputAutocapitalization(.never)
                 Text("DISPLAY and Xauthority are set for each GUI session. Install GUI Support before launching X11 applications.").font(.caption)
-                Picker("Renderer", selection: $graphicsMode) {
+                Picker("渲染器", selection: $graphicsMode) {
                     Text("Settings Default").tag("")
-                    Text("Software (Mesa)").tag("software")
+                    Text("软件 (Mesa)").tag("software")
                     Text("GPU-Resident Metal · Experimental").tag("mesa-metal-resident")
                     Text("Metal Verification · Diagnostics").tag("mesa-metal-verify")
                 }
@@ -865,7 +865,7 @@ struct PackageView: View {
                 Button("Available Updates") { execute("updates") }
                 TextField("Package name or search term", text: $query).autocorrectionDisabled().textInputAutocapitalization(.never)
                 Button("Search") { execute("search") }.disabled(!PackageOperation.validName(query))
-                Button("Package Details") { execute("details") }.disabled(!PackageOperation.validName(query))
+                Button("包详情") { execute("details") }.disabled(!PackageOperation.validName(query))
                 Button("Install Package") { confirm("install") }.disabled(!PackageOperation.validName(query))
                 Button("Review Package Upgrade") { confirm("upgrade") }.disabled(!PackageOperation.validName(query))
                 Button("Review Removal", role: .destructive) { confirm("remove") }.disabled(!PackageOperation.validName(query))
@@ -884,7 +884,7 @@ struct PackageView: View {
                     }
                 }
             }
-            if !details.isEmpty { Section("Package Details") { Text(details).font(.caption).textSelection(.enabled) } }
+            if !details.isEmpty { Section("包详情") { Text(details).font(.caption).textSelection(.enabled) } }
             Section("Installed Graphical Applications") {
                 Button("Refresh Applications") { loadApplications() }
                 ForEach(apps) { app in Button("Launch " + app.name) { run(app) } }
@@ -898,7 +898,7 @@ struct PackageView: View {
                 Button("Reset GUI Sessions") { LRRuntimeBridge.resetGraphicalSessions(); refreshApplications() }
                 Text("Repair runs native maintainer scripts and keeps a package-database metadata checkpoint inside Linux. It is not a full snapshot or automatic rollback. APT dependency repair asks for confirmation before changing packages. Safe diagnostic mode: use Diagnose and Check Dependencies before repair.").font(.caption)
             }.disabled(!enabled)
-            Section("Diagnostics") {
+            Section("诊断") {
                 if !log.isEmpty { Text(log).font(.system(.caption, design: .monospaced)).textSelection(.enabled) }
                 Button("Export Diagnostic Report") {
                     do { share = ExportItem(url: try LRRuntimeBridge.exportFullDiagnosticBundle()) } catch { self.error = error.localizedDescription }
@@ -991,7 +991,7 @@ struct ExchangeFilesView: View {
                 }
                 if leaves.isEmpty { Text("No files in the shared folder.").foregroundColor(.secondary) }
             }
-        }.navigationTitle("Files")
+        }.navigationTitle("文件")
          .onAppear(perform: refresh)
          .toolbar { Button("Refresh", action: refresh) }
          .fileImporter(isPresented: $importer, allowedContentTypes: [.data]) { result in
@@ -1021,7 +1021,7 @@ struct DiagnosticsView: View {
     var body: some View {
         NavigationView {
             List {
-                Section("Runtime") {
+                Section("运行时") {
                     Text("App: \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?") (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"))")
                     Text("Source: \(Bundle.main.infoDictionary?["LinuxRunnerSourceCommit"] as? String ?? "unknown") · iSH-derived runtime")
                     Text("Guest: ARM64 · Asbestos interpreter · JIT disabled")
@@ -1031,7 +1031,7 @@ struct DiagnosticsView: View {
                         Text("\(env.distribution) \(env.rootfsVersion) · \(manager.size(env))")
                     }
                 }
-                Section("Diagnostics") {
+                Section("诊断") {
                     Text("Categories: EXEC, SYSCALL, FS, MEMORY, SIGNAL, NETWORK, LOADER, UI. This export includes app events and instruction-fault metadata. Detailed syscall tracing is a developer build option.").font(.caption)
                     Button("Export Diagnostics") {
                         do {
@@ -1042,7 +1042,7 @@ struct DiagnosticsView: View {
                     }
                     ForEach(Array(manager.logs.enumerated()), id: \.offset) { _, line in Text(line).font(.system(.caption, design: .monospaced)).textSelection(.enabled) }
                 }
-            }.navigationTitle("Diagnostics").toolbar { Button("Done") { dismiss() } }
+            }.navigationTitle("诊断").toolbar { Button("完成") { dismiss() } }
         }.navigationViewStyle(.stack)
     }
 }
@@ -1080,8 +1080,8 @@ struct DeveloperDiagnosticsView: View {
                     Button("Apply tracing filters") { LRRuntimeBridge.configureDiagnostics(Int32(level), process: Int32(pid) ?? -1, syscall: Int32(syscall) ?? -1, errorsOnly: level < 4) }
                 }
                 Section("Live logs") {
-                    Picker("Category", selection: $category) { Text("全部").tag("All"); ForEach(Array(Set(entries.compactMap { $0["category"] as? String })).sorted(), id: \.self) { Text($0).tag($0) } }
-                    Picker("Severity", selection: $severity) { Text("全部").tag("All"); ForEach(DiagnosticLevel.allCases, id: \.rawValue) { Text($0.label).tag($0.label) } }
+                    Picker("类别", selection: $category) { Text("全部").tag("All"); ForEach(Array(Set(entries.compactMap { $0["category"] as? String })).sorted(), id: \.self) { Text($0).tag($0) } }
+                    Picker("严重级别", selection: $severity) { Text("全部").tag("All"); ForEach(DiagnosticLevel.allCases, id: \.rawValue) { Text($0.label).tag($0.label) } }
                     TextField("Search messages", text: $search)
                     ForEach(Array(filtered.enumerated()), id: \.offset) { _, entry in
                         VStack(alignment: .leading) {
@@ -1101,7 +1101,7 @@ struct DeveloperDiagnosticsView: View {
                     Text("Export includes redacted diagnostic records and recent display logs. Browser profiles, cookies, keys, input payloads and arbitrary application output are excluded.").font(.caption)
                     if let failure { Text(failure).foregroundColor(.red) }
                 }
-            }.navigationTitle("Developer Diagnostics").toolbar { Button("Done") { dismiss() } }
+            }.navigationTitle("Developer Diagnostics").toolbar { Button("完成") { dismiss() } }
         }.navigationViewStyle(.stack).onAppear(perform: refresh).onReceive(tick) { _ in refresh() }.sheet(item: $share) { ShareView(item: $0) }
     }
     private func refresh() { entries = LRRuntimeBridge.diagnosticEntries().compactMap { $0 as? [String: Any] }; health = LRRuntimeBridge.healthSummary() as? [String: Any] ?? [:] }
@@ -1116,11 +1116,11 @@ struct StorageManagementView: View {
         List {
             Section("Persistent storage") { ForEach(usage.keys.sorted(), id: \.self) { key in HStack { Text(key); Spacer(); Text(ByteCountFormatter.string(fromByteCount: usage[key] ?? 0, countStyle: .file)) } } }
             Section { if let free { Text("Host available: \(ByteCountFormatter.string(fromByteCount: free, countStyle: .file))") }
-                Button("Clean Temporary Files") { cleaning = true }
+                Button("清理临时文件") { cleaning = true }
                 Text("Removes only LinuxRunner's inactive installation staging files. User files, environments, packages and browser profiles are preserved.").font(.caption)
             }
-        }.navigationTitle("Storage").onAppear(perform: measure)
-        .confirmationDialog("Remove inactive temporary installation files?", isPresented: $cleaning) { Button("Clean Temporary Files") {
+        }.navigationTitle("存储").onAppear(perform: measure)
+        .confirmationDialog("移除非活动的临时安装文件？", isPresented: $cleaning) { Button("Clean Temporary Files") {
             let staging = LRRuntimeBridge.managedStorageURL().appendingPathComponent("installer-temporary")
             // Installer creates this namespace exclusively; no rootfs/exchange paths.
             if !UserDefaults.standard.bool(forKey: "InstallerActive") { try? FileManager.default.removeItem(at: staging) }
@@ -1200,7 +1200,7 @@ private struct ApplicationGridView: View {
         var seen = Set<String>()
         return (manager.graphical + environment.applications.filter { $0.displayMode == .application }).filter { seen.insert($0.launchKey).inserted }
     }
-    private var categories: [String] { ["All", "Favorites", "Recent"] + Set(available.flatMap { $0.categories ?? [] }).sorted() }
+    private var categories: [String] { ["All", "收藏夹", "最近"] + Set(available.flatMap { $0.categories ?? [] }).sorted() }
     private var filtered: [LinuxApplication] {
         available.filter { app in
             (category == "All" || category == "Favorites" && favorites.contains(app.launchKey) || category == "Recent" && recent.contains(app.launchKey) || (app.categories ?? []).contains(category)) &&
@@ -1239,9 +1239,9 @@ private struct ApplicationGridView: View {
                 }.font(.caption).foregroundColor(.secondary)
                 if let environment, !manager.active(environment) {
                     Text("Select this environment for the next launch, then reopen LinuxRunner. Its installed packages and files are preserved.").font(.callout)
-                    Button("Use on Next Launch") { LRRuntimeBridge.setNextRootName(environment.rootfsName) }
+                    Button("下次启动时使用") { LRRuntimeBridge.setNextRootName(environment.rootfsName) }
                 } else {
-                    Picker("Category", selection: $category) { ForEach(categories, id: \.self) { Text($0).tag($0) } }.pickerStyle(.menu)
+                    Picker("类别", selection: $category) { ForEach(categories, id: \.self) { Text($0).tag($0) } }.pickerStyle(.menu)
                     if filtered.isEmpty && !manager.discovering {
                         Text(available.isEmpty ? "No graphical desktop entries found. Install an application through App Manager or create an advanced launcher." : "No applications match this filter.").foregroundColor(.secondary)
                     }
@@ -1351,12 +1351,12 @@ private struct DevicesView: View {
         let outputs = AVAudioSession.sharedInstance().currentRoute.outputs.map { $0.portName }.joined(separator: ", ")
         let controllers = GCController.controllers().map { $0.vendorName ?? "Controller" }
         rows = [
-            Row(name: "Keyboard", symbol: "keyboard", detected: GCKeyboard.coalesced != nil ? "Connected" : "None", linux: "Works: key presses go to the Linux desktop and terminal (USB and Bluetooth keyboards).", works: true),
-            Row(name: "Mouse / Trackpad", symbol: "computermouse", detected: GCMouse.mice().isEmpty ? "None" : "Connected", linux: "Works through iOS pointer events: pointer, clicks and scrolling on the desktop. On iPhone, iOS provides a pointer only through AssistiveTouch.", works: true),
+            Row(name: "键盘", symbol: "keyboard", detected: GCKeyboard.coalesced != nil ? "已连接" : "无", linux: "可用：按键会发送到 Linux 桌面与终端（USB 与蓝牙键盘）。", works: true),
+            Row(name: "鼠标 / 触控板", symbol: "computermouse", detected: GCMouse.mice().isEmpty ? "无" : "已连接", linux: "通过 iOS 指针事件工作：在桌面上移动指针、点击与滚动。在 iPhone 上，iOS 只能通过辅助触控提供指针。", works: true),
             Row(name: "USB Drives and Files Locations", symbol: "externaldrive", detected: folders.isEmpty ? "No shared folders" : "\(available) of \(folders.count) available", linux: "Works for folders you share in Settings › Files › Shared iPhone Folders (pick a folder on the drive). They appear at /mnt/<name>.", works: true),
-            Row(name: "Audio Output (incl. USB audio)", symbol: "hifispeaker", detected: outputs.isEmpty ? "None" : outputs, linux: "Works: Linux sound plays through whatever iOS currently uses, including USB audio interfaces and headphones.", works: true),
+            Row(name: "音频输出（含 USB 音频）", symbol: "hifispeaker", detected: outputs.isEmpty ? "无" : outputs, linux: "可用：Linux 声音通过 iOS 当前使用的所有输出播放，包括 USB 音频接口与耳机。", works: true),
             Row(name: "Microphone (incl. USB)", symbol: "mic", detected: "—", linux: "Not available yet: Linux programs cannot record audio in this version.", works: false),
-            Row(name: "Game Controllers", symbol: "gamecontroller", detected: controllers.isEmpty ? "None" : controllers.joined(separator: ", "), linux: "Detected by iOS, but not yet passed to Linux programs as joysticks.", works: false),
+            Row(name: "游戏手柄", symbol: "gamecontroller", detected: controllers.isEmpty ? "无" : controllers.joined(separator: ", "), linux: "iOS 已检测到，但尚未作为摇杆传递给 Linux 程序。", works: false),
             Row(name: "Serial, USB Network, Other USB", symbol: "cable.connector", detected: "—", linux: "Not possible: no public iOS interface for raw USB devices.", works: false),
         ]
     }
@@ -1403,7 +1403,7 @@ private struct NoticesView: View {
                 ForEach(bundled, id: \.0) { item in Section(item.0) { Text(item.1).font(.caption.monospaced()).textSelection(.enabled) } }
             }
             .navigationTitle("Notices & Credits")
-            .toolbar { Button("Done") { dismiss() } }
+            .toolbar { Button("完成") { dismiss() } }
         }.navigationViewStyle(.stack)
     }
 }
@@ -1421,7 +1421,7 @@ private struct TerminalSettingsView: View {
     @State private var hideExtraKeys = false
     var body: some View {
         Form {
-            Section("Appearance") {
+            Section("外观") {
                 Stepper(value: $fontSize, in: 8...32, step: 1) { HStack { Text("Font Size"); Spacer(); Text("\(Int(fontSize)) pt").foregroundStyle(.secondary) } }
                     .onChange(of: fontSize) { prefs.fontSize = NSNumber(value: $0) }
                 Picker("Cursor", selection: $cursor) { Text("Block").tag(0); Text("Bar").tag(1); Text("Underline").tag(2) }
@@ -1431,13 +1431,13 @@ private struct TerminalSettingsView: View {
                     .onChange(of: scheme) { prefs.colorScheme = .init(rawValue: $0) ?? prefs.colorScheme }
             }
             Section {
-                Picker("Caps Lock", selection: $capsLock) { Text("Caps Lock").tag(0); Text("Control").tag(1); Text("Escape").tag(2) }
+                Picker("大写锁定", selection: $capsLock) { Text("大写锁定").tag(0); Text("Control").tag(1); Text("Escape").tag(2) }
                     .onChange(of: capsLock) { if let v = CapsLockMapping(rawValue: $0) { prefs.capsLockMapping = v } }
                 Toggle("Option Sends Escape", isOn: $optionEscape).onChange(of: optionEscape) { prefs.optionMapping = $0 ? OptionMapEsc : OptionMapNone }
                 Toggle("Backtick Sends Escape", isOn: $backtickEscape).onChange(of: backtickEscape) { prefs.backtickMapEscape = $0 }
                 Toggle("Ctrl-Space Goes to Linux", isOn: $controlSpace).onChange(of: controlSpace) { prefs.overrideControlSpace = $0 }
                 Toggle("Hide Extra Keys with Hardware Keyboard", isOn: $hideExtraKeys).onChange(of: hideExtraKeys) { prefs.hideExtraKeysWithExternalKeyboard = $0 }
-            } header: { Text("Keyboard") } footer: { Text("The terminal's key bar provides Esc, Tab, Ctrl, Alt and arrow keys on screen. Changes apply to open terminals.") }
+            } header: { Text("键盘") } footer: { Text("终端的按键栏在屏幕上提供 Esc、Tab、Ctrl、Alt 与方向键。更改对已打开的终端生效。") }
         }
         .navigationTitle("Terminal & Keyboard")
         .onAppear {
@@ -1457,8 +1457,8 @@ private struct AudioSettingsView: View {
             Section {
                 Toggle("Linux Sound", isOn: $enabled)
             } footer: { Text("Plays sound from Linux programs (browsers, media players, games) through the iPhone, mixed with other apps. Applies to the next desktop or app session. Sound stops while LinuxRunner is in the background.") }
-            Section("Current Session") {
-                valueRow("Status", value: audio["state"] as? String ?? "No running session")
+            Section("当前会话") {
+                valueRow("状态", value: audio["state"] as? String ?? "没有活动会话")
                 if let played = audio["played_ms"] as? Int, played > 0 {
                     valueRow("Played", value: String(format: "%.1f s", Double(played) / 1000))
                     valueRow("Dropped to keep latency low", value: String(format: "%.1f s", Double(audio["dropped_ms"] as? Int ?? 0) / 1000))
@@ -1500,7 +1500,7 @@ private struct SharedFoldersView: View {
                             let name = folder["name"] ?? ""; checking = name
                             LRRuntimeBridge.checkSharedFolder(name) { summary in checks[name] = summary; checking = nil }
                         }.font(.caption).buttonStyle(.borderless).disabled(checking != nil || !LRRuntimeBridge.isRunning())
-                    }.swipeActions { Button("Remove", role: .destructive) { pendingRemoval = folder } }
+                    }.swipeActions { Button("移除", role: .destructive) { pendingRemoval = folder } }
                 }
             }
             if let message { Section { Text(message).font(.footnote) } }
@@ -1573,7 +1573,7 @@ private struct GraphicsSettingsView: View {
     var body: some View { Form {
         Section {
             Picker("Renderer", selection: $mode) {
-                Text("Software (Mesa)").tag("mesa")
+                Text("软件 (Mesa)").tag("mesa")
                 Text("GPU-Resident Metal · Experimental").tag("mesa-metal-resident")
                 if developerMode || mode == "mesa-metal-verify" { Text("Metal Verification · Diagnostics").tag("mesa-metal-verify") }
             }
@@ -1581,7 +1581,7 @@ private struct GraphicsSettingsView: View {
         } header: { Text("Linux Applications") } footer: {
             Text("Applies to the next desktop start and to applications opened from LinuxRunner. A launcher with its own graphics choice keeps it. Browsers keep software rendering.")
         }
-        Section("Current Session") {
+        Section("当前会话") {
             if summary["session"] as? Bool == true {
                 Text(routingText).font(.callout)
             } else { Text("No GUI session has started since LinuxRunner opened.").foregroundColor(.secondary) }
@@ -1593,7 +1593,7 @@ private struct GraphicsSettingsView: View {
                 Text("Metal draws are guest OpenGL draws executed by the GPU. Mesa draws were rasterised in software. Presenting the desktop through Metal is not counted as acceleration.")
             }
         }
-    }.navigationTitle("Graphics").onAppear { summary = LRRuntimeBridge.graphicsSummary() }.onReceive(refresh) { _ in summary = LRRuntimeBridge.graphicsSummary() } }
+    }.navigationTitle("图形").onAppear { summary = LRRuntimeBridge.graphicsSummary() }.onReceive(refresh) { _ in summary = LRRuntimeBridge.graphicsSummary() } }
     private var description: String {
         switch mode {
         case "mesa-metal-resident": return "Supported OpenGL draws run on the iPhone GPU through Metal, with images kept on the GPU between draws. Unsupported operations fall back to software Mesa. Tested on Mac with Blender; device results are still being collected."
@@ -1677,7 +1677,7 @@ struct GuestCrashDetailView: View {
             }
             Section("Full Report") { Text(report.fullText).font(.system(.caption, design: .monospaced)).textSelection(.enabled) }
         }.navigationTitle("Crash Details")
-            .toolbar { if dismissible { Button("Done") { dismiss() } } }
+            .toolbar { if dismissible { Button("完成") { dismiss() } } }
             .sheet(item: $share) { ShareView(item: $0) }
     }
 }
