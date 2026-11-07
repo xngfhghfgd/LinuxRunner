@@ -1,19 +1,19 @@
 # Create a GitHub Release with the prebuilt zh-Hans IPA as an asset.
 #
-# The local token (xngfhghfgd) cannot upload release assets via
+# The personal token (xngfhghfgd) cannot upload release assets via
 # uploads.github.com (returns "Bad Size" on every attempt), so this workflow
-# uses the repo's own GITHUB_TOKEN — which always has full write access to
+# uses the repo's own GITHUB_TOKEN — which has full write access to
 # release assets — to create the release and attach the IPA committed under
 # dist/ in the zh-Hans branch.
+#
+# Trigger: manual workflow_dispatch only (a push trigger would loop, since
+# this workflow's own success updates the release and would re-trigger on
+# subsequent pushes to dist/).
 
 name: Create Release with IPA
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ zh-Hans ]
-    paths:
-      - 'dist/**'
 
 jobs:
   publish-release:
@@ -26,23 +26,54 @@ jobs:
         with:
           ref: zh-Hans
 
+      - name: Verify IPA exists
+        run: |
+          ls -lh dist/LinuxRunner-zh-Hans.ipa
+          shasum -a 256 dist/LinuxRunner-zh-Hans.ipa
+
       - name: Create / update release and upload IPA
-        uses: softprops/action-gh-release@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag_name: v1.0.1-zh-Hans
-          name: "LinuxRunner 1.0.1 (zh-Hans) - 简体中文版"
-          prerelease: true
-          draft: false
-          body: |
-            简体中文翻译版 LinuxRunner 1.0.1 (zh-Hans)。
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          TAG="v1.0.1-zh-Hans"
+          REPO="${{ github.repository }}"
 
-            - 由 GitHub Actions 在 zh-Hans 分支编译 (build-ipa workflow, run #42063057579)
-            - ad-hoc 签名,需配合 Sideloadly / AltStore 侧载安装
-            - 源码与翻译: 分支 zh-Hans
+          # 1. Delete any existing release on this tag (ignore 404)
+          REL_ID=$(curl -sS -H "Authorization: Bearer $GH_TOKEN" \
+            "https://api.github.com/repos/$REPO/releases?per_page=100" \
+            | python3 -c "
+              import json,sys
+              for r in json.load(sys.stdin):
+                  if r.get('tag_name')=='$TAG':
+                      print(r['id']); break
+            ")
+          if [ -n "$REL_ID" ]; then
+            echo "deleting old release $REL_ID"
+            curl -sS -X DELETE -H "Authorization: Bearer $GH_TOKEN" \
+              "https://api.github.com/repos/$REPO/releases/$REL_ID" > /dev/null
+            sleep 3
+          fi
 
-            ## 下载
-            点击下方的 asset 即可直接下载编译好的 IPA。
-          files: |
-            dist/LinuxRunner-zh-Hans.ipa
-          fail_on_unmatched_files: true
+          # 2. Create the release
+          REL=$(curl -sS -X POST -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "tag_name": "'"$TAG"'",
+              "name": "LinuxRunner 1.0.1 (zh-Hans) - 简体中文版",
+              "target_commitish": "zh-Hans",
+              "prerelease": true,
+              "draft": false,
+              "body": "简体中文翻译版 LinuxRunner 1.0.1 (zh-Hans)。ad-hoc 签名,需配合 Sideloadly / AltStore 侧载安装。源码与翻译: 分支 zh-Hans。"
+            }' \
+            "https://api.github.com/repos/$REPO/releases")
+          NEW_ID=$(echo "$REL" | python3 -c "import json,sys;print(json.load(sys.stdin)['id'])")
+          echo "created release $NEW_ID"
+
+          # 3. Get the upload URL and upload the IPA as a standard release asset
+          UPLOAD_URL=$(echo "$REL" | python3 -c "import json,sys;print(json.load(sys.stdin)['upload_url'].split('?')[0])")
+          echo "upload_url=$UPLOAD_URL"
+          curl -sS -X POST -H "Authorization: Bearer $GH_TOKEN" \
+            -F "file=@dist/LinuxRunner-zh-Hans.ipa" \
+            "${UPLOAD_URL}/LinuxRunner-zh-Hans.ipa?name=LinuxRunner-zh-Hans.ipa" \
+            | python3 -c "import json,sys;d=json.load(sys.stdin);print('asset:',d.get('name'),d.get('size'),'bytes');print('download:',d.get('browser_download_url'))"
